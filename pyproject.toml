@@ -1,0 +1,49 @@
+[project]
+name = "tensorbuster"
+version = "0.1.1+nightly20260619"
+description = "C2 framework for the AI era"
+
+dependencies = [
+    "fastmcp-slim[client]",
+    "fastmcp-slim[server]",
+    "fastmcp",
+    "numpy",
+    "scipy",
+    "pandas",
+    "scikit-learn",
+    "matplotlib",
+    "seaborn",
+    "unsloth",
+    "transformers",
+    "trl",
+    "bitsandbytes",
+    "datasets",
+    "tokenizers",
+    "accelerate",
+    "evaluate",
+    "optimum",
+    "huggingface-hub",
+    "nltk",
+    "category-encoders",
+    "requests",
+    "requests-toolbelt",
+    "jupyter",
+    "jupyterlab",
+    "notebook",
+    "ipykernel",
+    "pillow",
+    "markitdown",
+    "htb-ai-library @ git+https://github.com/PandaSt0rm/htb-ai-library"
+]
+
+[build-system]
+requires = [
+    "setuptools",
+    "ninja",
+    "nvidia-cudnn-cu13",
+    "nvidia-nvtx"
+]
+build-backend = "backend"
+backend-path = [
+    ".tb-build"
+]
