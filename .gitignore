@@ -2,3 +2,4 @@
 /tb-venv
 /*egg-info
 /*.log
+/.ipynb_checkpoints
