@@ -16,8 +16,8 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * Tensor steganography (defined via the `encode_lsb`, `decode_lsb`, `encode_lsb_from_image`, `payload_enc`, `export_encoded`, and `import_image` MCP tools)
 * Exfiltration (via the `load_file` tool)
 * Command execution (via the `run_system_command` tool)
+* On-the-fly payload generation/compilation (via the `build_windows_payload` tool; still needs major testing)
 
 ## What still needs work
 * Beaconing / sleep obfuscation
-* On-the-fly payload generation/compilation
 * GUI

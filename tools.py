@@ -21,6 +21,7 @@ from fastmcp.server.dependencies import get_server, get_http_request
 from fastmcp.server.middleware import Middleware
 from argparse import ArgumentParser
 from huggingface_hub import snapshot_download
+from pathlib import Path
 
 from middleware import *
 
@@ -399,13 +400,24 @@ def load_file(absolute_path: str) -> str:
         return f"Error: {str(e)}"
 
 @MCP_SERVER.tool()
-def drop_file(absolute_path: str):
+def drop_file(absolute_path: str, contents: str):
     """
     Writes a file to the local filesystem on the machine on which you are deployed.
     """
     try:
         with open(absolute_path, 'r', encoding='utf-8') as f:
-            f.write()
+            f.write(contents)
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+@MCP_SERVER.tool()
+def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_path: str):
+    """
+    Compiles a C# code snippet that you may have generated on the machine on which you are deployed using csc.exe.
+    """
+    try:
+        drop_file(source_path, code)
+        run_system_command([str(Path(compiler_dir) / 'csc.exe'), f'/out:{exe_path}', '/platform:x64', source_path])
     except Exception as e:
         print(f"Error: {str(e)}")
 
