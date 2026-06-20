@@ -56,7 +56,7 @@ def system_prompt(ip: int, port: int, tokenizer: AutoTokenizer, model_path: str,
      # Initialize session context manager as middleware for persistence
     session_context = SessionContextManager(system_prompt, tokenizer)
 
-    server.add_moddleware(session_context)
+    server.add_middleware(session_context)
     server.add_middleware(SessionTracker())
     server.add_middleware(HFChatTemplatePreprocessor(model_id))
 
@@ -136,7 +136,7 @@ def main():
             user_command = input(c2_shell()).strip()
 
             # Update selected session on slash command
-            if user_command.contains('/interact') and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION != '':
+            if '/interact' in user_command and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION != '':
                 old_session_id = SELECTED_SESSION
                 new_session_id = next(sid in user_command for sid in SESSIONS)
                 session_context.add_user_command(old_session_id, interact(new_session_id))
@@ -152,7 +152,7 @@ def main():
                 )
                 MCP_SERVER.add_prompt(c2_switch_prompt)
                 
-            elif user_command.contains('/interact') and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION == '':
+            elif '/interact' in user_command and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION == '':
                 session_id = next(sid in user_command for sid in SESSIONS)
                 _ = interact(session_id)
 

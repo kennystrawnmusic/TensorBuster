@@ -644,8 +644,11 @@ def get_conversation_history(user_command: str, session_context: Middleware, ses
     return hist_message
 
 @MCP_SERVER.tool()
-def stage_encoded():
+def stage_encoded() -> AutoModel:
     """
-    Encodes the FastMCP client in the mantissa bits of the base model weights
+    Encodes the FastMCP client in the mantissa bits of the base model weights. Performs all operations internally, so does not need to take any parameters.
+
+    Returns:
+        AutoModel: modified model with the FastMCP client encoded
     """
-    # TODO: add client code, call the payload_enc tool to encode the client code in the model weights, and save the model weights with the client code packed
+    # TODO: add client code, call the payload_enc tool to encode the client code in the model weights, and return the modified model back to the caller
