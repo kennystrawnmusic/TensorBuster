@@ -6,7 +6,7 @@ While going through the COAE course, the combination of tensor steganography in 
 TensorBuster is the result of this experiment. It's an atttempt to build a complete C2 framework specifically for the age of AI, where tensor steganography is used to hide one LLM inside another and/or to hide an LLM inside image tensors.
 
 ## WARNING: UNTESTED
-Because I have yet to be offered a real-world engagement that would allow proper testing of this beast and isn't HTB-confidential stuff, I currently do not have the system resources to adequately test this. As such, those with access to more than one powerful machine capable of running powerful LLMs is going to need to test this on either a production network, a large room with many physical machines in it, or an AI lab environment that's significant enough to be .
+Because I have yet to be offered a real-world engagement that would allow proper testing of this beast and isn't HTB-confidential stuff, I currently do not have the system resources to adequately test this. As such, those with access to more than one powerful machine capable of running powerful LLMs is going to need to test this on either a production network, a large room with many physical machines in it, or an AI lab environment that isn't as closed off as HTB's.
 PRs and issue reports are welcome! If during testing any issues are discovered, feel free to report them and I'll look into it.
 
 ## What's implemented
