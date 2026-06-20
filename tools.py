@@ -605,3 +605,29 @@ def mcp_pivot(listener_ip: str, listener_port: int = random.randint(30000, 65535
 
     pivot_thread.start()
     return pivot_mcp
+
+@MCP_SERVER.tool()
+def get_conversation_history(user_command: str, session_context: Middleware, session_id: str = SELECTED_SESSION) -> str:
+    """
+    Tool for retrieving the conversation history with the C2 operator (you can poll this while waiting for additional instructions)
+
+    Args:
+        user_command (str): Instructions given to you by the C2 operator
+        session_context (fastmcp.server.middleware.Middleware): MCP middleware for handling the session context
+
+    Returns:
+        str: A list of messages in the conversation history along with a menu containing options for the next action
+    """
+
+    hist_message = "[*] Conversation history:"
+    for i, msg in enumerate(session_context.get_session_history(session_id)):
+        role = msg["role"].upper()
+        content_preview = msg["content"][:80] + "..." if len(msg["content"]) > 80 else msg["content"]
+        hist_message += f"\n    {i+1}. [{role}] {content_preview}"
+
+    hist_message += "\n[*] Options:"
+    hist_message += "\n    1. Add agent response - session_context.add_agent_response(session_id, 'response text')"
+    hist_message += "\n    2. Clear session history - session_context.clear_session(session_id)"
+    hist_message += "\n    3. Continue to next command...\n"
+
+    return hist_message

