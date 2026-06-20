@@ -341,17 +341,23 @@ def import_image(filename: str) -> torch.Tensor:
     return F.to_tensor(Image.open(filename))
 
 @MCP_SERVER.tool()
-def payload_enc(legitimate_state_dict_file: str, num_lsb: int, payload_bytes_to_hide: bytearray) -> torch.Tensor:
+def payload_enc(legitimate_state_dict_file: str, target_key: str, num_lsb: int, payload_bytes_to_hide: bytearray) -> torch.Tensor:
     """
     Encodes an entire payload inside a given number of mantissa bits of a supplied model file.
 
     Args:
         legitimate_state_dict_file (str): name of file to hide payload inside
-        num_lsb (int): number of LSBs needed to hide the payload
+        target_key (str): key in target model weights specifying the target tensor
+        num_lsb (int): number of mantissa bits needed to hide the payload
         payload_bytes_to_hide(bytearray): an array of bytes containing the payload to encode
 
     Returns:
-        torch.Tensor: A Tensor wrapping the payload bytes inside mantissa bits
+        torch.Tensor: A Tensor wrapping the payload bytes inside mantissa bits of the target key
+
+    Raises:
+        FileNotFoundError: If the file at the path supplied to in the `legitimate_state_dict_file` parameter does not exist
+        KeyError: If the target key specified by the `target_key` parameter doesn't exist
+        ValueError: If the payload is too big to fit in the target tensor
     """
     if not os.path.exists(legitimate_state_dict_file):
         raise FileNotFoundError(
@@ -363,7 +369,6 @@ def payload_enc(legitimate_state_dict_file: str, num_lsb: int, payload_bytes_to_
     print("State dict loaded successfully.")
 
     # Choose a target layer/tensor for embedding
-    target_key = "large_layer.weight"
     if target_key not in loaded_state_dict:
         raise KeyError(
             f"Target key '{target_key}' not found in state dict. Available keys: {list(loaded_state_dict.keys())}"
