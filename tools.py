@@ -32,6 +32,7 @@ MCP_SERVER = FastMCP("TensorBuster C2 Server")
 # Sliver-style session tracking
 SESSIONS = []
 SELECTED_SESSION = ""
+BASE_MODEL_ID = "NexVeridian/Qwen3-Coder-Next-8bit"
 
 @MCP_SERVER.tool()
 def download_base_model(model_id: str, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
@@ -57,7 +58,7 @@ def download_base_model(model_id: str, local_path: str) -> Tuple[AutoTokenizer, 
 
     return local_tokenizer, local_model
 
-@MCP_SERVER.resource('weights://nexveridian/qwen3-coder-next-8bit')
+@MCP_SERVER.resource(f'weights://{BASE_MODEL_ID}')
 def download_weights() -> AutoModel:
     """
     Hosts a binary copy of the base model weights on the MCP server as a resource for agents to download
@@ -66,14 +67,14 @@ def download_weights() -> AutoModel:
     model_path = Path("tb-base-model")
 
     if not os.path.exists("tb-base-model"):
-        _, model = download_base_model("NexVeridian/Qwen3-Coder-Next-8bit", str(model_path))
+        _, model = download_base_model({BASE_MODEL_ID}, str(model_path))
     else:
         print("Base model already exists, skipping server-side download")
         model = AutoModel.from_pretrained(model_path, local_files_only=True)
 
     return model
 
-@MCP_SERVER.resource('tokenizer://nexveridian/qwen3-coder-next-8bit')
+@MCP_SERVER.resource(f'tokenizer://{BASE_MODEL_ID}')
 def load_tokenizer(server: FastMCP = CurrentFastMCP()) -> AutoTokenizer:
     """
     Hosts the tokenizer for the currently running base model

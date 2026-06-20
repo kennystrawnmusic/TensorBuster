@@ -26,9 +26,9 @@ from pathlib import Path
 
 from tools import *
 
-# The MCP_SERVER, SESSIONS, and SELECTED_SESSION constants are all defined in tools.py
+# MCP_SERVER is defined in tools.py and imported here
 @MCP_SERVER.prompt()
-def system_prompt(ip: int, port: int, tokenizer: AutoTokenizer, model_path: str, server: FastMCP = CurrentFastMCP()):
+def system_prompt(ip: int, port: int, model_id: str, tokenizer: AutoTokenizer, model_path: str, server: FastMCP = CurrentFastMCP()):
     """
     Default system prompt for the agent.
     """
@@ -93,7 +93,9 @@ def c2_shell() -> str:
     """
     C2 shell prompt. Intention is for this to be Sliver-style, changing the session ID each time a new agent is selected
     """
+    # SESSIONS is defined in tools.py and imported here
     if len(SESSIONS) == 0:
+        # SELECTED_SESSION is defined in tools.py and imported here
         if SELECTED_SESSION != "":
             return f"TensorBuster ({SELECTED_SESSION}) >"
         else:
@@ -112,10 +114,12 @@ def main():
     ip = args.listener_ip
     port = args.listener_port if args.listener_port else random.randint(30000, 65535)
 
+    
     model_path = Path("tb-base-model")
 
     if not os.path.exists("tb-base-model"):
-        tokenizer, _ = download_base_model("NexVeridian/Qwen3-Coder-Next-8bit", str(model_path))
+        # BASE_MODEL_ID is defined in tools.py and imported here
+        tokenizer, _ = download_base_model(BASE_MODEL_ID, str(model_path))
     else:
         print("Base model already exists, skipping download")
 
