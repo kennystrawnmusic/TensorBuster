@@ -3,6 +3,7 @@ import os
 import struct
 import subprocess
 import threading
+import random
 
 import torch.nn as nn
 import torch.optim as optim
@@ -25,7 +26,7 @@ from pathlib import Path
 
 from tools import *
 
-# The MCP_SERVER constant is defined in tools.py
+# The MCP_SERVER, SESSIONS, and SELECTED_SESSION constants are all defined in tools.py
 @MCP_SERVER.prompt()
 def system_prompt(ip: int, port: int, tokenizer: AutoTokenizer, model_path: str, server: FastMCP = CurrentFastMCP()):
     """

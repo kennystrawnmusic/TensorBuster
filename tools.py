@@ -34,13 +34,13 @@ SESSIONS = []
 SELECTED_SESSION = ""
 
 @MCP_SERVER.tool()
-def download_base_model(model_id, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
+def download_base_model(model_id: str, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
     """
     Downloads and saves the base model from the HuggingFace Hub.
 
     Args:
-        model_id: HF Hub model ID (format: User/Name)
-        local_path: folder in which to store the model
+        model_id (str): HF Hub model ID (format: User/Name)
+        local_path (str): folder in which to store the model
 
     Returns:
         Tuple[AutoTokenizer, AutoModel]: a tuple containing the model and its tokenizer
