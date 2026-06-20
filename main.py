@@ -132,7 +132,12 @@ def main():
             
             # Get user command
             user_command = input(c2_shell()).strip()
-            
+
+            # Update selected session on slash command
+            if user_command.contains('/interact') and any(sid in user_command for sid in SESSIONS):
+                interact(next(sid in user_command for sid in SESSIONS))
+
+            # Re-print prompt if user doesn't type anything
             if not user_command:
                 continue
             
