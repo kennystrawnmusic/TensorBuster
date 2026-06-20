@@ -72,7 +72,18 @@ def download_weights() -> AutoModel:
         model = AutoModel.from_pretrained(model_path, local_files_only=True)
 
     return model
-    
+
+@MCP_SERVER.resource('tokenizer://nexveridian/qwen3-coder-next-8bit')
+def load_tokenizer(server: FastMCP = CurrentFastMCP()) -> AutoTokenizer:
+    """
+    Hosts the tokenizer for the currently running base model
+    """
+
+    # This is a piece of custom middleware I wrote myself, so should be loaded automatically into every instance
+    session_context_middleware = next(m for m in server.middleware if "SessionContextManager" in m.name)
+
+    return session_context_middleware.get_tokenizer()
+
 @MCP_SERVER.tool()
 def encode_lsb(
     tensor_orig: torch.Tensor, data_bytes: bytes, num_lsb: int
@@ -631,3 +642,10 @@ def get_conversation_history(user_command: str, session_context: Middleware, ses
     hist_message += "\n    3. Continue to next command...\n"
 
     return hist_message
+
+@MCP_SERVER.tool()
+def stage_encoded():
+    """
+    Encodes the FastMCP client in the mantissa bits of the base model weights
+    """
+    # TODO: add client code, call the payload_enc tool to encode the client code in the model weights, and save the model weights with the client code packed

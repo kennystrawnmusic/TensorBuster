@@ -17,6 +17,10 @@ class SessionContextManager(Middleware):
     def get_session_state_key(self, session_id: str) -> str:
         """Generate state key for a session."""
         return f"c2_context_{session_id}"
+
+    def get_tokenizer(self, session_id: str) -> AutoTokenizer:
+        """Retrieve tokenizer from middleware"""
+        return self.tokenizer
     
     def initialize_session(self, session_id: str) -> None:
         """Initialize conversation history for a new session."""
