@@ -451,7 +451,7 @@ def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_pa
     Uses csc.exe to compile a C# code snippet that you may have generated on the machine on which you are deployed.
     
     Args:
-        code (str): The generated code snippet.
+        code (str): The C# code snippet that you've generated to attempt to exploit a suspected vulnerability.
         compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different.
         source_path (str): Path to file to save the code snippet to.
         exe_path (str): Path to the resulting binary.
