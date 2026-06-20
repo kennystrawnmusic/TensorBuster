@@ -178,6 +178,7 @@ class SessionTracker(Middleware):
         return result
 
 class HFChatTemplatePreprocessor(Middleware):
+    # model_id is passed as a parameter to the constructor
     def __init__(self, model_id: str):
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, local_files_only=True)
 
