@@ -22,7 +22,6 @@ from fastmcp.server.middleware import Middleware
 from argparse import ArgumentParser
 from huggingface_hub import snapshot_download
 
-from middleware import *
 from tools import *
 
 def download_base_model(model_id: str, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
