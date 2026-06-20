@@ -23,7 +23,7 @@ from argparse import ArgumentParser
 from huggingface_hub import snapshot_download
 from pathlib import Path
 
-from tools import MCP_SERVER, download_base_model
+from tools import *
 
 # The MCP_SERVER constant is defined in tools.py
 @MCP_SERVER.prompt()
