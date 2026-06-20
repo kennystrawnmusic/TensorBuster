@@ -417,7 +417,7 @@ def load_file(absolute_path: str) -> str:
         absolute_path (str): the full path of the file to read
 
     Returns:
-        str: The contents of the file that was read
+        str: Either the contents of the file that was read if the read was successful or an error message if the read failed
     """
     try:
         with open(absolute_path, 'r', encoding='utf-8') as f:
@@ -434,6 +434,8 @@ def drop_file(absolute_path: str, contents: str):
         absolute_path (str): the full path of the file to drop
         contents (str): the data to save at the full path in question
 
+    Prints: an error message if an error occurred during the write attempt
+    
     Returns:
         None: drops a file to the file system instead.
     """
@@ -453,6 +455,8 @@ def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_pa
         compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different.
         source_path (str): Path to file to save the code snippet to.
         exe_path (str): Path to the resulting binary.
+
+    Prints: an error message if a compilation error occurred during an attempt to compile the code
 
     Returns:
         None: outputs a command that you are to use the `run_system_command()` tool to execute.
