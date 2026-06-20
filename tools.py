@@ -456,7 +456,7 @@ def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_pa
         source_path (str): Path to file to save the code snippet to.
         exe_path (str): Path to the resulting binary.
 
-    Prints: an error message if a compilation error occurred during an attempt to compile the code
+    Prints: an error message if a compilation or file operation error occurred during an attempt to compile the code
 
     Returns:
         None: outputs a command that you are to use the `run_system_command()` tool to execute.
