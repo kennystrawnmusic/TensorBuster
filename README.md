@@ -1,7 +1,7 @@
 # TensorBuster: Where MCP and C2 frameworks collide
 The days of getting past security solutions using Cobalt Strike and nothing else are over. In order to get past real-time monitoring, one needs to design a C2 framework that's not only polymorphic but also, critically, nondeterministic. Legacy polymorphism like that of Sliver may get you past traditional AV solutions, but the only way to get past modern EDRs like CrowdStrike Falcon or Palo Alto XDR on a consistent basis is to get creative, especially with the implementation of AI by the EDR solutions themselves.
 
-While going through the COAE course, the combination of tensor steganography in the `AI Data Attacks` module and MCP in the `Attacking AI: Application and System` module gave me an idea: What if it's possible to use MCP as its own C2 and LLMs as the implants?
+While going through the COAE course, the combination of tensor steganography in the `AI Data Attacks` module and MCP in the `Attacking AI: Application and System` module gave me an idea: What if it's possible to use MCP as a C2 connection, LLMs as the implants, and tensor steganography as a C2 stager?
 
 TensorBuster is the result of this experiment. It's an atttempt to build a complete C2 framework specifically for the age of AI, where tensor steganography is used to hide one LLM inside another and/or to hide an LLM inside image tensors.
 
