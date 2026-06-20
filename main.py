@@ -160,7 +160,9 @@ def main():
             elif '/interact' in user_command and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION == '':
                 session_id = next(sid in user_command for sid in SESSIONS)
                 _ = interact(session_id)
-            elif '/exit' in user_command:
+
+            # Exit gracefully if user types `/exit`
+            if '/exit' in user_command:
                 break
 
             # Skip to next loop iteration if user doesn't type anything
