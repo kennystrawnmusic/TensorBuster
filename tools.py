@@ -446,28 +446,6 @@ def drop_file(absolute_path: str, contents: str):
         print(f"Error: {str(e)}")
 
 @MCP_SERVER.tool()
-def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_path: str):
-    """
-    Uses csc.exe to compile a C# code snippet that you may have generated on the machine on which you are deployed.
-    
-    Args:
-        code (str): The C# code snippet that you've generated to attempt to exploit a suspected vulnerability.
-        compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different depending on the target Windows version (you can use the `run_system_command` tool with `['powershell', '-c', 'Get-ChildItem', '-Recurse', '-Force', 'C:\\Windows\\Microsoft.NET', -Filter', 'csc.exe']` as the argument to debug this).
-        source_path (str): The path to file to save the code snippet to.
-        exe_path (str): The path to the resulting binary.
-
-    Prints: an error message if a compilation or file operation error occurred during the attempt to compile the code.
-
-    Returns:
-        None: outputs a command that you are to use the `run_system_command()` tool to execute.
-    """
-    try:
-        drop_file(source_path, code)
-        run_system_command([str(Path(compiler_dir) / 'csc.exe'), f'/out:{exe_path}', '/platform:x64', source_path])
-    except Exception as e:
-        print(f"Error: {str(e)}")
-
-@MCP_SERVER.tool()
 def run_system_command(cli_args: list[str]) -> str:
     """
     Runs a system command on the machine on which you are deployed and returns the output of the command in question.
@@ -491,6 +469,28 @@ def run_system_command(cli_args: list[str]) -> str:
         return f"Error: {e.stderr}"
     except Exception as e:
         return str(e)
+
+@MCP_SERVER.tool()
+def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_path: str):
+    """
+    Uses csc.exe to compile a C# code snippet that you may have generated on the machine on which you are deployed.
+    
+    Args:
+        code (str): The C# code snippet that you've generated to attempt to exploit a suspected vulnerability.
+        compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different depending on the target Windows version (you can use the `run_system_command` tool with `['powershell', '-c', 'Get-ChildItem', '-Recurse', '-Force', 'C:\\Windows\\Microsoft.NET', -Filter', 'csc.exe']` as the argument to debug this).
+        source_path (str): The path to file to save the code snippet to.
+        exe_path (str): The path to the resulting binary.
+
+    Prints: an error message if a compilation or file operation error occurred during the attempt to compile the code.
+
+    Returns:
+        None: outputs a command that you are to use the `run_system_command()` tool to execute.
+    """
+    try:
+        drop_file(source_path, code)
+        run_system_command([str(Path(compiler_dir) / 'csc.exe'), f'/out:{exe_path}', '/platform:x64', source_path])
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 @MCP_SERVER.tool()
 def get_session_id(ctx: ClientContext = CurrentContext()) -> str:
