@@ -20,4 +20,5 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 
 ## What still needs work
 * Beaconing / sleep obfuscation
+* Asynchronous target selection (Sliver-like)
 * GUI
