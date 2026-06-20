@@ -16,7 +16,7 @@ This tool is intended solely for use ONLY in the following contexts:
 * In a bug bounty program where aggressive WAFs like Cloudflare Firewall are present (particularly common in programs hosted on HackerOne, Bugcrowd, and the like)
 * In a realistic CTF or lab environment where lateral movement is necessary to make any progress
 
-I take absolutely no legal responsibility for the misuse of this software against any target that you lack written authorization to test.
+I take absolutely no legal responsibility for the misuse of this software against any target that you lack written authorization to test. Responsibility is squarely on the user to ensure that this C2 framework is used legally, ethically, and responsibly.
 
 ## WARNING: UNTESTED
 Because I have yet to be offered a real-world engagement that would allow proper testing of this beast and isn't HTB-confidential stuff, I currently do not have the system resources to adequately test this. As such, those with access to more than one powerful machine capable of running powerful LLMs is going to need to test this on either a production network, a large room with many physical machines in it, or an AI lab environment that isn't as closed off as HTB's.
