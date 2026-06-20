@@ -20,5 +20,5 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 
 ## What still needs work
 * Beaconing / sleep obfuscation
-* Asynchronous target selection (Sliver-like)
+* Asynchronous target selection (Sliver-like: the current implementation only lets you interact with one session at a time)
 * GUI
