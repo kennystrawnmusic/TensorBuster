@@ -399,6 +399,17 @@ def load_file(absolute_path: str) -> str:
         return f"Error: {str(e)}"
 
 @MCP_SERVER.tool()
+def drop_file(absolute_path: str):
+    """
+    Writes a file to the local filesystem on the machine on which you are deployed.
+    """
+    try:
+        with open(absolute_path, 'r', encoding='utf-8') as f:
+            f.write()
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+@MCP_SERVER.tool()
 def run_system_command(args: list[str]) -> str:
     """
     Runs a system command on the machine on which you are deployed and returns the output of the command in question.
