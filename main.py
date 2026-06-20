@@ -135,18 +135,23 @@ def main():
             user_command = input(c2_shell()).strip()
 
             # Update selected session on slash command
-            if user_command.contains('/interact') and any(sid in user_command for sid in SESSIONS):
-                interact(next(sid in user_command for sid in SESSIONS))
+            if user_command.contains('/interact') and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION != '':
+                session_id = next(sid in user_command for sid in SESSIONS)
+                session_context.add_user_command(session_id, interact(session_id))
+                
+            elif user_command.contains('/interact') and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION == '':
+                session_id = next(sid in user_command for sid in SESSIONS)
+                _ = interact(session_id)
 
             # Re-print prompt if user doesn't type anything
             if not user_command:
                 continue
             
             # Store user command in session context
-            session_context.add_user_command(session_id, user_command)
+            session_context.add_user_command(SELECTED_SESSION, user_command)
 
             # Build complete prompt context from session history
-            prompt_context = session_context.build_prompt_context(session_id, tokenizer)
+            prompt_context = session_context.build_prompt_context(SE, tokenizer)
 
             # Define prompt getter that retrieves from session state
             def c2_command(instructions=prompt_context):
