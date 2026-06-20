@@ -1,6 +1,6 @@
 from transformers import AutoConfig, AutoModel, AutoTokenizer
 from fastmcp import FastMCP, Client, Context as ClientContext
-from fastmcp.dependencies import CurrentContext
+from fastmcp.dependencies import CurrentContext, CurrentFastMCP
 from fastmcp.server.context import Context as ServerContext
 from fastmcp.server.dependencies import get_server, get_http_request
 from fastmcp.server.middleware import Middleware
