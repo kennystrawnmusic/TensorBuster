@@ -20,5 +20,5 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 
 ## What still needs work
 * Beaconing / sleep obfuscation
-* Asynchronous target selection (Sliver-like: the current implementation only lets you interact with one session at a time)
+* In-memory LLM loading on targets (this is going to require the use of a client written in a compiled language like Rust to get around the lack of a Python interpreter on most real-world targets)
 * GUI
