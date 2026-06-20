@@ -21,8 +21,9 @@ from fastmcp.server.dependencies import get_server, get_http_request
 from fastmcp.server.middleware import Middleware
 from argparse import ArgumentParser
 from huggingface_hub import snapshot_download
+from pathlib import Path
 
-from tools import *
+from tools import MCP_SERVER, download_base_model
 
 # The MCP_SERVER constant is defined in tools.py
 @MCP_SERVER.prompt()
@@ -73,20 +74,6 @@ def interact(session_id: str) -> str:
     In the meantime, you are free to continue performing autonomous enumeration and update the C2 operator upon return.
     """
     
-def download_base_model(model_id: str, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
-    # Download and save in one go (model.save_pretrained includes the config)
-    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
-    model = AutoModel.from_pretrained(model_id, trust_remote_code=True)
-
-    tokenizer.save_pretrained(local_path)
-    model.save_pretrained(local_path)
-
-    # Reload from local to confirm integrity
-    local_tokenizer = AutoTokenizer.from_pretrained(local_path, local_files_only=True)
-    local_model = AutoModel.from_pretrained(local_path, local_files_only=True)
-
-    return local_tokenizer, local_model
-    
 def c2_shell() -> str:
     """
     C2 shell prompt. Intention is for this to be Sliver-style, changing the session ID each time a new agent is selected
@@ -110,15 +97,15 @@ def main():
     ip = args.listener_ip
     port = args.listener_port if args.listener_port else random.randint(30000, 65535)
 
-    model_path = "./tb-base-model"
+    model_path = Path("tb-base-model")
 
     if not os.path.exists("tb-base-model"):
-        tokenizer, _ = download_base_model("NexVeridian/Qwen3-Coder-Next-8bit", model_path)
+        tokenizer, _ = download_base_model("NexVeridian/Qwen3-Coder-Next-8bit", str(model_path))
     else:
         print("Base model already exists, skipping download")
 
-    tokenizer = AutoTokenizer.from_pretrained(model_path, local_files_only=True)
-    system_prompt(ip, port, tokenizer, model_path)
+    tokenizer = AutoTokenizer.from_pretrained(str(model_path), local_files_only=True)
+    system_prompt(ip, port, tokenizer, str(model_path))
 
     while True:
         if len(SESSIONS) == 0:

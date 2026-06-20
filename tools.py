@@ -34,6 +34,46 @@ SESSIONS = []
 SELECTED_SESSION = ""
 
 @MCP_SERVER.tool()
+def download_base_model(model_id, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
+    """
+    Downloads and saves the base model from the HuggingFace Hub.
+
+    Args:
+        model_id: HF Hub model ID (format: User/Name)
+        local_path: folder in which to store the model
+
+    Returns:
+        Tuple[AutoTokenizer, AutoModel]: a tuple containing the model and its tokenizer
+    """
+    tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
+    model = AutoModel.from_pretrained(model_id, trust_remote_code=True)
+
+    tokenizer.save_pretrained(local_path)
+    model.save_pretrained(local_path)
+
+    # Reload from local to confirm integrity
+    local_tokenizer = AutoTokenizer.from_pretrained(local_path, local_files_only=True)
+    local_model = AutoModel.from_pretrained(local_path, local_files_only=True)
+
+    return local_tokenizer, local_model
+
+@MCP_SERVER.resource('weights://nexveridian/qwen3-coder-next-8bit')
+def download_weights() -> AutoModel:
+    """
+    Hosts a binary copy of the base model weights on the MCP server as a resource for agents to download
+    """
+
+    model_path = Path("tb-base-model")
+
+    if not os.path.exists("tb-base-model"):
+        _, model = download_base_model("NexVeridian/Qwen3-Coder-Next-8bit", str(model_path))
+    else:
+        print("Base model already exists, skipping server-side download")
+        model = AutoModel.from_pretrained(model_path, local_files_only=True)
+
+    return model
+    
+@MCP_SERVER.tool()
 def encode_lsb(
     tensor_orig: torch.Tensor, data_bytes: bytes, num_lsb: int
 ) -> torch.Tensor:
@@ -426,13 +466,13 @@ def load_file(absolute_path: str) -> str:
         return f"Error: {str(e)}"
 
 @MCP_SERVER.tool()
-def drop_file(absolute_path: str, contents: str):
+def drop_file(absolute_path: str, contents: bytearray):
     """
     Writes a file to the local filesystem on the machine on which you are deployed.
 
     Args:
         absolute_path (str): the full path of the file to drop
-        contents (str): the data to save at the full path in question
+        contents (bytearray): the data to save at the full path in question
 
     Prints: an error message if an error occurred during the write attempt
     
@@ -440,7 +480,7 @@ def drop_file(absolute_path: str, contents: str):
         None: drops a file to the file system instead.
     """
     try:
-        with open(absolute_path, 'r', encoding='utf-8') as f:
+        with open(absolute_path, 'wb') as f:
             f.write(contents)
     except Exception as e:
         print(f"Error: {str(e)}")
