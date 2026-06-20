@@ -500,7 +500,7 @@ def get_session_id(ctx: ClientContext = CurrentContext()) -> str:
     return ctx.session_id()
 
 @MCP_SERVER.tool()
-def update_session_with_response(session_id: str, response_content: str, context_manager = None) -> str:
+def update_session_with_response(session_id: str, response_content: str, context_manager: Middleware = next([mid for mid in CurrentFastMCP().middleware if "SessionContextManager" in mid.name], None)) -> str:
     """
     Allows the C2 server to append agent responses to session conversation history.
     This integrates agent responses into the persistent context for future prompt building.
@@ -508,6 +508,7 @@ def update_session_with_response(session_id: str, response_content: str, context
     Args:
         session_id (str): The session ID to update
         response_content (str): The agent's response/output to store
+        context_manager (Middleware): MCP middleware for managing context
         
     Returns:
         str: Confirmation that the response was stored
