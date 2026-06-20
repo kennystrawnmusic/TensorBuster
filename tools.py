@@ -649,6 +649,6 @@ def stage_encoded() -> AutoModel:
     Encodes the FastMCP client in the mantissa bits of the base model weights. Performs all operations internally, so does not need to take any parameters.
 
     Returns:
-        AutoModel: modified model with the FastMCP client encoded
+        AutoModel: modified model with the FastMCP client embedded in the mantissa bits
     """
     # TODO: add client code, call the payload_enc tool to encode the client code in the model weights, and return the modified model back to the caller
