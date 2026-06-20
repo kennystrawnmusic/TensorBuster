@@ -452,7 +452,7 @@ def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_pa
     
     Args:
         code (str): The C# code snippet that you've generated to attempt to exploit a suspected vulnerability.
-        compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different.
+        compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different depending on the target Windows version (you can use the `execute_system_command` tool with `['dir', '/a', 'C:\\Windows\\Microsoft.NET']` as the argument to debug this).
         source_path (str): Path to file to save the code snippet to.
         exe_path (str): Path to the resulting binary.
 
