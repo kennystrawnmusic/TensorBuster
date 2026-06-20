@@ -21,6 +21,7 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * Exfiltration (via the `load_file` and `drop_file` tools)
 * Command execution (via the `run_system_command` tool)
 * On-the-fly payload generation/compilation (via the `build_windows_payload` tool; still needs major testing)
+* Dynamic listener port allocation using `random.randint()` to make fingerprinting more difficult
 
 ## What still needs work
 * Beaconing / sleep obfuscation
