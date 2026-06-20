@@ -117,6 +117,7 @@ def main():
                 history_len = len(session_context.get_session_history(session_id))
                 print(f"{i}. {session_id} (messages: {history_len})")
 
+            # TODO: figure out how to use a slash-command for this so we don't interrupt the flow each and every time
             SELECTED_SESSION = int(input("\nSession to interact with: "))
             
             # Get user command
@@ -146,6 +147,7 @@ def main():
             mcp.add_prompt(c2_command_prompt)
             
             # Provide hook for integration with agent responses
+            # TODO: move this to an async function so we can continue interacting with the current agent
             print(f"\n[*] Prompt updated for session {session_id}")
             print("[*] Conversation history:")
             for i, msg in enumerate(session_context.get_session_history(session_id)):
