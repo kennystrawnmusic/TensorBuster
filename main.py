@@ -70,6 +70,7 @@ def interact(session_id: str) -> str:
     return f"""
     The SELECTED_SESSION has been changed to the following: {session_id}
     Please stand by while the operator works with that session; he or she will return to this session shortly.
+    In the meantime, you are free to continue performing autonomous enumeration and update the C2 operator upon return.
     """
     
 def download_base_model(model_id: str, local_path: str) -> Tuple[AutoTokenizer, AutoModel]:
