@@ -88,8 +88,8 @@ def c2_shell() -> str:
 def main():
     parser = ArgumentParser(description="TensorBuster C2 Server")
 
-    parser.add_argument("--listener-ip", help="Listener IP address")
-    parser.add_argument("--listener-port", help="Listener Port")
+    parser.add_argument("--listener-ip", required=True, help="Listener IP address")
+    parser.add_argument("--listener-port", required=True, help="Listener Port")
 
     args = parser.parse_args()
 
