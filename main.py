@@ -60,6 +60,19 @@ def system_prompt(ip: int, port: int, tokenizer: AutoTokenizer, model_path: str,
     server.add_middleware(SessionTracker())
     server.add_middleware(HFChatTemplatePreprocessor(model_id))
 
+    # Use background thread to start the server
+    main_thread = threading.Thread(
+        target=server.run,
+        kwargs={
+            "transport": "streamable-http",
+            "host": ip,
+            "port": port
+        },
+        daemon=True
+    )
+
+    main_thread.start()
+
 @MCP_SERVER.prompt()
 def interact(session_id: str) -> str:
     """
