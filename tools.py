@@ -490,6 +490,9 @@ def run_system_command(cli_args: list[str]) -> str:
 
 @MCP_SERVER.tool()
 def get_session_id(ctx: ClientContext = CurrentContext()) -> str:
+    """
+    Returns the session ID of the current client context
+    """
     return ctx.session_id()
 
 @MCP_SERVER.tool()
