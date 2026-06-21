@@ -87,6 +87,7 @@ def main():
     MCP_SERVER.add_middleware(SessionContextManager(system_prompt, tokenizer))
     MCP_SERVER.add_middleware(SessionTracker())
     MCP_SERVER.add_middleware(HFChatTemplatePreprocessor(model_id))
+    MCP_SERVER.add_middleware(StegoWrapper())
 
     # Use background thread to start the server
     main_thread = threading.Thread(
