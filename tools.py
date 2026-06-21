@@ -987,7 +987,7 @@ MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
         torch.save(modified_model.state_dict(), buffer)
 
         buffer.seek(0)
-        return buffer
+        return buffer, modified_config
     except Exception as e:
         print(f"Error during encoding or state dict modification: {e}")
         raise  # Re-raise the exception
