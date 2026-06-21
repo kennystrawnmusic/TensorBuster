@@ -875,10 +875,10 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
     def __init__(self, model_name: str, model_path: str = None):
          # Determine device (CUDA if available, otherwise CPU)
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        
+
         # Initialize the tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_name) 
-        
+
         # Initialize a task-specific model & move it to the correct device
         self.model = AutoModelForCausalLM.from_pretrained(
             model_path or model_name,
