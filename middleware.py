@@ -229,7 +229,7 @@ class DynamicHostPortTracker(Middleware):
 
 class StegoWrapper(Middleware):
     """
-    Wrapper for tensor steganography operations
+    Wrapper middleware for tensor steganography operations
     """
 
     def __init__(self, modified_state_dict: dict, target_key: str, num_lsb: int):

@@ -7,6 +7,7 @@ import random
 import json
 import importlib
 import copy
+import io
 
 import torch.nn as nn
 import torch.optim as optim
@@ -837,7 +838,7 @@ client = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
     loaded_state_dict = base_model.state_dict()
 
     # Back up the model configuration too since we're going to need it
-    base_config = AutoConfig.from_pretrained(MODEL_PATH or BASE_MODEL_ID)
+    base_config = AutoConfig.from_pretrained(model_id)
 
     # Choose a target layer/tensor for embedding
     if target_key not in loaded_state_dict:
