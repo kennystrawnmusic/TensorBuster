@@ -27,7 +27,7 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * MCP core
 * Pivoting (via the `mcp_pivot` tool, which LLMs can use to spin up clones of the original MCP server to cross subnet boundaries)
 * Tensor steganography (via the `encode_lsb`, `decode_lsb`, `encode_lsb_from_image`, `payload_enc`, `export_encoded`, and `import_image` MCP tools)
-* Exfiltration (via the `load_file` and `drop_file` tools)
+* Exfiltration (via the `download_file` and `upload_file` tools)
 * Command execution (via the `run_system_command` tool)
 * On-the-fly payload generation/compilation (via the `build_windows_payload` tool; still needs major testing)
 * Dynamic listener port allocation using `random.randint()` to make fingerprinting more difficult

