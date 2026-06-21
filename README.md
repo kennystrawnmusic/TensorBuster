@@ -35,5 +35,5 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 ## What still needs work
 * Beaconing / sleep obfuscation
 * In-memory LLM loading on target systems (this is going to require the use of a client written in a compiled language [like](https://github.com/rust-mcp-stack/rust-mcp-sdk) [Rust](https://github.com/huggingface/huggingface_hub_rust) to get around the lack of a Python interpreter on most real-world targets)
-* `llmfit` as a plugin, to autodetect model compatibility on remote systems
+* `llmfit` as a plugin, to autodetect model compatibility on remote systems (this will have to also involve the Rust beacon)
 * GUI
