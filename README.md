@@ -32,10 +32,10 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * On-the-fly payload generation/compilation (via the `build_windows_payload` tool; still needs major testing)
 * Dynamic listener port allocation using `random.randint()` to make fingerprinting more difficult
 * MCP-based staging (via the `stage_encoded` tool, which uses tensor steganography to hide an encoded MCP client inside a model and exports the resulting modified model data)
-* Reflective in-memory package installation (via the `pip_wheel` tool)
+* Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `BytesIO` object)
 
 ## What still needs work
 * Beaconing / sleep obfuscation
-* In-memory LLM loading on target systems (this is going to require the use of a client written in a compiled language [like](https://github.com/rust-mcp-stack/rust-mcp-sdk) [Rust](https://github.com/huggingface/huggingface_hub_rust) to get around the lack of a Python interpreter on most real-world targets)
+* In-memory LLM loading on target systems that lack a Python interpreter (this is going to require the use of a client written in a compiled language [like](https://github.com/rust-mcp-stack/rust-mcp-sdk) [Rust](https://github.com/huggingface/huggingface_hub_rust) to ensure everything works)
 * `llmfit` as a plugin, to autodetect model compatibility on remote systems (this will have to also involve the Rust beacon)
 * GUI

@@ -65,9 +65,9 @@ def system_prompt(ip: int, port: int, server: FastMCP = CurrentFastMCP()):
     """
 
 @MCP_SERVER.tool()
-def pip_wheel(package_name: str, extra_package_indices: list[str] = None) -> io.BytesIO:
+def pip_download(package_name: str, extra_package_indices: list[str] = None) -> io.BytesIO:
     """
-    Builds a pip package and its dependencies and returns the wheels 
+    Downloads a pip package and its dependencies and returns the wheels 
     bundled in a ZIP archive as an in-memory byte stream.
     
     Args:
@@ -92,8 +92,8 @@ def pip_wheel(package_name: str, extra_package_indices: list[str] = None) -> io.
                 package_indices.insert(0, index)
 
         cmd = [
-            "pip", "wheel", package_name, 
-            "--wheel-dir", tmpdir,
+            "pip", "download", package_name, 
+            "-d", tmpdir,
             "--no-cache-dir",
             "--index-url", package_indices[0]
         ]
@@ -851,7 +851,7 @@ client_preinit = Client("http://{ip}:{port}/mcp/")
 try:
     import torch
 except ImportError:
-    torch_io = await client_preinit.call_tool("pip_wheel", {{
+    torch_io = await client_preinit.call_tool("pip_download", {{
         "package_name": "torch",
         "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
     }})
@@ -860,7 +860,7 @@ except ImportError:
 try:
     import transformers
 except ImportError:
-    transformers_io = await client_preinit.call_tool("pip_wheel", {{
+    transformers_io = await client_preinit.call_tool("pip_download", {{
         "package_name": "transformers"
     }})
     install_missing(transformers_io.data)
