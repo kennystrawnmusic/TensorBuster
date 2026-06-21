@@ -32,6 +32,7 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * On-the-fly payload generation/compilation (via the `build_windows_payload` tool; still needs major testing)
 * Dynamic listener port allocation using `random.randint()` to make fingerprinting more difficult
 * MCP-based staging (via the `stage_encoded` tool, which uses tensor steganography to hide an encoded MCP client inside a model and exports the resulting modified model data)
+* Reflective in-memory package installation (via the `pip_wheel` tool)
 
 ## What still needs work
 * Beaconing / sleep obfuscation
