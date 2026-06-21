@@ -733,7 +733,7 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
 import asyncio
 import json
 
-# Use f-string to bootstrap FastMCP so that the tool can be used for other tools
+# Use f-string to bootstrap FastMCP in case it's not available on the remote system
 try:
     import fastmcp
 except ImportError:
