@@ -742,11 +742,11 @@ import asyncio
 import json
 
 try:
-    from fastmcp import Client, FastMCP
+    from fastmcp import Client
 except ImportError:
     # Install FastMCP and try again
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "fastmcp"],
+        [sys.executable, "-m", "pip", "install", "fastmcp-slim[\"client\"]"],
         check=True,
         capture_output=True,
         text=True
