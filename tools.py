@@ -849,12 +849,12 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
     ) -> str:
         """
         Handle server requests for LLM completions.
-    
+
         Args:
             messages (list[fastmcp.client.sampling.SamplingMessage]): Messages sent between the assistant and the C2 operator
             params (fastmcp.client.sampling.SamplingParams): Sampling parameters (temperature, max_tokens, etc.)
             context (fastmcp.client.sampling.RequestContext): Request context with metadata
-    
+
         Returns:
             The assistant's respoonse to the C2 operator's commands
         """
