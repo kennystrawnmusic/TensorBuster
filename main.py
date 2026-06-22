@@ -24,23 +24,11 @@ from argparse import ArgumentParser
 from huggingface_hub import snapshot_download
 from pathlib import Path
 
+from consts import *
+from prompts import *
+from resources import *
 from tools import *
 from middleware import *
-
-# MCP_SERVER is defined in tools.py and imported here
-@MCP_SERVER.prompt()
-def interact(session_id: str) -> str:
-    """
-    Changes the session context to the ID supplied by the C2 operator. Usage: /interact [session_id]
-    """
-
-    SELECTED_SESSION = session_id
-    
-    return f"""
-    The SELECTED_SESSION has been changed to the following: {session_id}
-    Please stand by while the operator works with that session; he or she will return to this session shortly.
-    In the meantime, you are free to continue performing autonomous enumeration and update the C2 operator upon return.
-    """
     
 def c2_shell() -> str:
     """
