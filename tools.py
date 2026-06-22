@@ -756,7 +756,7 @@ except ImportError:
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
 
-# Include a local copy of the `run_system_command` tool so the agent doesn't need to reach out to the C2 server each time a command execution is necesary
+# Include a local copy of the `run_system_command` tool so the agent can run commands on the target system, not just the C2 server
 {inspect.getsource(run_system_command)}
 
 def install_missing(zip_file_path: io.BytesIO):
