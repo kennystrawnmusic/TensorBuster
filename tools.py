@@ -733,8 +733,8 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
     host_port_tracker = next(m for m in server.middleware if type(m).__name__ == 'DynamicHostPortTracker')
 
     # This is why that middleware is needed: to ensure that we have access to the random port(s) after they've been allocated
-    ip = host_port_tracker.ip
-    port = host_port_tracker.port
+    ip = host_port_tracker.get_ip()
+    port = host_port_tracker.get_port()
 
     # Client code to embed in the mantissa bits
     to_encode = f'''
