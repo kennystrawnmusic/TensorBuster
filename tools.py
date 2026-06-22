@@ -757,7 +757,7 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
             weights = torch.load(extracted_data['weights.pt'], weights_only=False)
     
             model = AutoModel.from_config(config, state_dict=weights)
-    
+
             # Extra logic, predictions, etc. goes here
         ```
 
