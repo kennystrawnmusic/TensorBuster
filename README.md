@@ -31,8 +31,8 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * Command execution (via the `run_system_command` tool)
 * On-the-fly payload generation/compilation (via the `build_windows_payload` tool; still needs major testing)
 * Dynamic listener port allocation using `random.randint()` to make fingerprinting more difficult
-* MCP-based staging (via the `stage_encoded` tool, which uses tensor steganography to hide an encoded MCP client inside a model that already exists on the target system, if discovered, and exports the resulting modified model data)
-* Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `BytesIO` object)
+* MCP-based staging (via the `stage_encoded` tool, which uses tensor steganography to hide an encoded MCP client inside a model that already exists on the target system, if discovered, and exports the resulting modified model data as a JSON object)
+* Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `BytesIO` object for the )
 
 ## What still needs work
 * Beaconing / sleep obfuscation
