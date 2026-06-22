@@ -596,7 +596,7 @@ def run_system_command(cli_args: list[str]) -> str:
         return str(e)
 
 @MCP_SERVER.tool()
-def build_csharp_payload(code: str):
+def build_csharp_payload(code: str) -> bytes:
     """
     Uses csc.exe on the server to compile C# source code that you may have generated to exploit a suspected vulnerability.
     
@@ -604,7 +604,7 @@ def build_csharp_payload(code: str):
         code (str): The C# code snippet that you've generated.
 
     Returns:
-        io.BytesIO: BytesIO object containing the resulting executable
+        bytes: Byte array containing the resulting executable
 
     Raises:
         RuntimeError: If a compiler error occurs.
@@ -636,7 +636,12 @@ def build_csharp_payload(code: str):
             exe_bytes = f.read()
             
         # 5. Wrap the bytes in a BytesIO object and rewind the pointer
-        return io.BytesIO(exe_bytes)
+        exe_io = BytesIO()
+        with open(exe_io, "wb") as f:
+            f.write(exe_bytes)
+
+        exe_io.seek(0)
+        return exe_io
 
     finally:
         # 6. Always clean up both files from the hard drive, even if compilation crashed
