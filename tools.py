@@ -802,11 +802,17 @@ try:
     import torch
     import torch.nn as nn
 except ImportError:
-    torch_io = await client_preinit.call_tool("pip_download", {{
+    torch_io_p1 = await client_preinit.call_tool("pip_download", {{
         "package_name": "torch",
         "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
     }})
-    install_missing(torch_io.data)
+    torch_io_p2 = await client_preinit.call_tool("pip_download", {{
+        "package_name": "torchvision",
+        "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
+    }})
+    
+    install_missing(torch_io_p1.data)
+    install_missing(torch_io_p2.data)
 
 try:
     from transformers import AutoConfig, AutoModel, AutoTokenizer
