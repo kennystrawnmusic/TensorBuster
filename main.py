@@ -38,11 +38,11 @@ def c2_shell() -> str:
     if len(SESSIONS) != 0:
         # SELECTED_SESSION is defined in tools.py and imported here
         if SELECTED_SESSION != "":
-            return f"TensorBuster ({SELECTED_SESSION}) >"
+            return f"\e[1mTensorBuster (\e[1;31m{SELECTED_SESSION})\e[0m >"
         else:
-            return "TensorBuster > "
+            return "\e[1mTensorBuster\e[0m > "
     else:
-        return "TensorBuster > "
+        return "\e[1mTensorBuster\e[0m > "
 
 def main():
     parser = ArgumentParser(description="TensorBuster C2 Server")
