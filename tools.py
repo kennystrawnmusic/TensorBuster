@@ -741,13 +741,17 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
 import asyncio
 import json
 
-# Use f-string to bootstrap FastMCP in case it's not available on the remote system
 try:
-    import fastmcp
+    from fastmcp import Client, FastMCP
 except ImportError:
-    fastmcp = {json.loads(extract_package_source("fastmcp"))}
-
-from fastmcp import Client, FastMCP
+    # Install FastMCP and try again
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", "fastmcp"],
+        check=True,
+        capture_output=True,
+        text=True
+    )
+    import fastmcp
 
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
@@ -796,6 +800,7 @@ client_preinit = Client("http://{ip}:{port}/mcp/")
 
 try:
     import torch
+    import torch.nn as nn
 except ImportError:
     torch_io = await client_preinit.call_tool("pip_download", {{
         "package_name": "torch",
@@ -804,14 +809,12 @@ except ImportError:
     install_missing(torch_io.data)
 
 try:
-    import transformers
+    from transformers import AutoConfig, AutoModel, AutoTokenizer
 except ImportError:
     transformers_io = await client_preinit.call_tool("pip_download", {{
         "package_name": "transformers"
     }})
     install_missing(transformers_io.data)
-
-from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 class AutoTokenizerSamplingHandler(SamplingHandler):
     def __init__(self, model_name: str, model_path: str = None):
