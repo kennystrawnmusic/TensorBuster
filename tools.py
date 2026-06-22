@@ -723,7 +723,7 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
         num_lsb (int): Number of mantissa bits to modify
 
     Returns:
-        io.BytesIO: An in-memory ZIP file containing the model weights and a JSON dump of the model's configuration.
+        io.BytesIO: An in-memory ZIP file containing the model weights and a JSON dump of the model's configuration. The configuration can be loaded using `AutoConfig.from_pretrained` and the model can be loaded using `AutoModel.from_pretrained`.
 
     Raises:
         FileNotFoundError: If the base model file does not exist
