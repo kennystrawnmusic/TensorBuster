@@ -61,18 +61,11 @@ def main():
     else:
         print("Base model already exists, skipping download")
 
-    tokenizer = AutoTokenizer.from_pretrained(str(MODEL_PATH), local_files_only=True)
-    prompt = system_prompt(ip, port)
-
-    messages_preinit = [
-        {"role": "system", "content": prompt}
-    ]
-
-    MCP_SERVER.instructions = tokenizer.apply_chat_template(messages_preinit, tokenize=False, add_generation_prompt=False)
+    # Preprocessing logic has been moved to the stego-client code
 
     # Middleware
     MCP_SERVER.add_middleware(DynamicHostPortTracker(ip, port))
-    MCP_SERVER.add_middleware(SessionContextManager(system_prompt, tokenizer))
+    MCP_SERVER.add_middleware(SessionContextManager(model, tokenizer))
     MCP_SERVER.add_middleware(SessionTracker())
     MCP_SERVER.add_middleware(HFChatTemplatePreprocessor(BASE_MODEL_ID))
     MCP_SERVER.add_middleware(StegoWrapper())

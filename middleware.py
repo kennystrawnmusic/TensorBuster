@@ -14,9 +14,9 @@ from tools import decode_lsb
 class SessionContextManager(Middleware):
     """Manages conversation state per session using FastMCP middleware and state management."""
     
-    def __init__(self, base_instructions: str, tokenizer=None):
-        self.base_instructions = base_instructions
-        self.base_model = AutoModel.from_pretrained(consts.BASE_MODEL_ID)
+    def __init__(self, model: AutoModel, tokenizer=None):
+        self.base_instructions = ""
+        self.base_model = model
         self.tokenizer = tokenizer
         self.session_history = {}  # {session_id: [{"role": "user"/"assistant", "content": ...}]}
     
