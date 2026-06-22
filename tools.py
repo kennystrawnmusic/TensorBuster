@@ -658,8 +658,15 @@ def mcp_pivot(listener_ip: str, listener_port: int = random.randint(30000, 65535
 
     pivot_mcp.instructions = parent.instructions
 
-    for middleware in parent.middleware:
-        pivot_mcp.add_middleware(middleware)
+    model = next(m for m in server.middleware if type(m).__name__ == 'SessionContextManager').base_model
+    tokenizer = next(m for m in server.middleware if type(m).__name__ == 'SessionContextManager').tokenizer
+
+    # Need to initialize the middleware manually to ensure that it points to the correct IP and port after the pivot is initialized
+    pivot_mcp.add_middleware(DynamicHostPortTracker(ip, port))
+    pivot_mcp.add_middleware(SessionContextManager(model, tokenizer))
+    pivot_mcp.add_middleware(SessionTracker())
+    pivot_mcp.add_middleware(HFChatTemplatePreprocessor(BASE_MODEL_ID))
+    pivot_mcp.add_middleware(StegoWrapper())
 
     for prompt in parent.prompts:
         pivot_mcp.add_prompt(prompt.fn, name=prompt.name, description=prompt.description)
