@@ -842,7 +842,7 @@ def install_missing(tool_response: CallToolResult):
             import shutil
             shutil.rmtree(extract_dir)
 
-# Bootstrap client for ensuring proper client setup
+# Bootstrap client for staged setup
 bootstrap = Client("http://{ip}:{port}/mcp/")
 
 try:
