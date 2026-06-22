@@ -97,7 +97,7 @@ def pip_download(package_name: str, extra_package_indices: list[str] = None) -> 
     # Reset stream pointer to the beginning before returning
     archive_stream.seek(0)
     return archive_stream
-    
+
 @MCP_SERVER.tool()
 def extract_package_source(package_name: str) -> str:
     """
