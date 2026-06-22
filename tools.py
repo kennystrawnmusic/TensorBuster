@@ -940,7 +940,7 @@ handler = AutoTokenizerSamplingHandler("{BASE_MODEL_ID}")
 
 await bootstrap.close()
 
-# Using a very obvious constant name to ensure the LLM understands
+# Using a very obvious constant name to ensure the LLM obeys
 MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
     '''
 
