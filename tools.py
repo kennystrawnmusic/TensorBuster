@@ -658,8 +658,8 @@ def mcp_pivot(listener_ip: str, listener_port: int = random.randint(30000, 65535
 
     pivot_mcp.instructions = parent.instructions
 
-    model = next(m for m in server.middleware if type(m).__name__ == 'SessionContextManager').base_model
-    tokenizer = next(m for m in server.middleware if type(m).__name__ == 'SessionContextManager').tokenizer
+    model = next(m for m in parent.middleware if type(m).__name__ == 'SessionContextManager').base_model
+    tokenizer = next(m for m in parent.middleware if type(m).__name__ == 'SessionContextManager').tokenizer
 
     # Need to initialize the middleware manually to ensure that it points to the correct IP and port after the pivot is initialized
     pivot_mcp.add_middleware(DynamicHostPortTracker(ip, port))
