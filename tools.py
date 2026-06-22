@@ -833,7 +833,7 @@ def install_missing(tool_response: CallToolResult):
                     capture_output=True,
                     text=True
                 )
-                print(f"Successfully installed {len(whls)} wheels.")
+                print(f"Successfully installed {{len(whls)}} wheels.")
             else:
                 print("No .whl files found in the zip archive.")
                 
