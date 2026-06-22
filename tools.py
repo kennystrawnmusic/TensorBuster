@@ -833,14 +833,14 @@ try:
 except ImportError:
     # Install FastMCP client package and try again
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "mcp", "fastmcp-slim[client]"],
+        [sys.executable, "-m", "pip", "install", "fastmcp-slim[client]"],
         check=True,
         capture_output=True,
         text=True
     )
     from fastmcp import Client
 
-from mcp.types import CallToolResult
+from fastmcp.client import CallToolResult
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
 
