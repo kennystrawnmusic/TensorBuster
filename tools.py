@@ -723,7 +723,19 @@ def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP 
         num_lsb (int): Number of mantissa bits to modify
 
     Returns:
-        io.BytesIO: An in-memory ZIP file containing the model weights and a JSON dump of the model's configuration. The configuration can be loaded using `AutoConfig.from_pretrained` and the model can be loaded using `AutoModel.from_pretrained`.
+        io.BytesIO: An in-memory ZIP file containing the model weights and a JSON dump of the model's configuration. The resulting model can be loaded using the following Python code snippet, assuming you've `cd`'d into the directory to which this ZIP file is extracted:
+
+        ```python
+        import torch
+        from transformers import AutoConfig, AutoModel
+        
+        config = AutoConfig.from_pretrained('config.json')
+        weights = torch.load('weights.pt', weights_only=False)
+
+        model = AutoModel.from_config(config, state_dict=weights)
+
+        # Extra logic, predictions, etc. goes here
+        ```
 
     Raises:
         FileNotFoundError: If the base model file does not exist
