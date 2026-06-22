@@ -35,7 +35,7 @@ def c2_shell() -> str:
     C2 shell prompt. Intention is for this to be Sliver-style, changing the session ID each time a new agent is selected
     """
     # SESSIONS is defined in tools.py and imported here
-    if len(SESSIONS) == 0:
+    if len(SESSIONS) != 0:
         # SELECTED_SESSION is defined in tools.py and imported here
         if SELECTED_SESSION != "":
             return f"TensorBuster ({SELECTED_SESSION}) >"
