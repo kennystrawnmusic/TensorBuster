@@ -736,8 +736,8 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
         client = Client("http://{ip}:{port}/mcp/")
 
         response = await client.call_tool('stage_encoded', {{
-            "model_id": "NexVeridian/Qwen3-Coder-Next-8bit",
-            "target_key": "large_layer.weight"
+            "model_id": "NexVeridian/Qwen3-Coder-Next-8bit", # change this depending on models present in your current environment
+            "target_key": "large_layer.weight"               # change this if this target key doesn't exist
         }}
 
         zip_bytes = base64.b64decode(response.content[0].text)
