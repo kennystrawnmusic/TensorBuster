@@ -607,7 +607,7 @@ def build_csharp_payload(code: str) -> bytes:
         bytes: Byte array containing the resulting executable
 
     Raises:
-        RuntimeError: If a compiler error occurs.
+        RuntimeError: If a compiler error occurs. If raised, contains detailed compiler output to allow for proper debugging and error diagnosis.
     """
     # 1. Create temporary paths for both source code and output binary
     # We must close them immediately so csc.exe has permission to open/write them on Windows
