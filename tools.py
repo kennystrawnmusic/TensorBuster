@@ -936,7 +936,7 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
         response_tokens = outputs[0][inputs.input_ids.shape[1]:]
         return self.tokenizer.decode(response_tokens, skip_special_tokens=True)
 
-handler = AutoTokenizerSamplingHandler("{BASE_MODEL_ID}")
+handler = AutoTokenizerSamplingHandler("{model_id}")
 
 await bootstrap.close()
 
