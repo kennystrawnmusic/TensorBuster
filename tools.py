@@ -605,12 +605,47 @@ def build_csharp_payload(code: str):
 
     Returns:
         io.BytesIO: BytesIO object containing the resulting executable
+
+    Raises:
+        RuntimeError: If a compiler error occurs.
     """
+    # 1. Create temporary paths for both source code and output binary
+    # We must close them immediately so csc.exe has permission to open/write them on Windows
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.cs', delete=False) as src_file:
+        src_file.write(code)
+        src_path = src_file.name
+
+    with tempfile.NamedTemporaryFile(suffix='.exe', delete=False) as out_file:
+        out_path = out_file.name
+
     try:
-        upload_file(os.getcwd(), code)
-        _ = run_system_command(['C:\\Program Files\\Microsoft Visual Studio\\18\\Insiders\\MSBuild\\Current\\Bin\\Roslyn\\csc.exe', f'/out:C:\\Windows\\Tasks\\temp.exe', '/platform:x64', source_path])
-    except Exception as e:
-        print(f"Error: {str(e)}")
+        # 2. Run the compiler pointing to our temporary paths
+        # Specify the absolute path to csc.exe if it is not in your system PATH
+        result = subprocess.run(
+            ["csc", "/target:exe", f"/out:{out_path}", src_path],
+            capture_output=True,
+            text=True
+        )
+        
+        # 3. Raise an error if compilation fails, including the compiler's output
+        if result.returncode != 0:
+            raise RuntimeError(f"C# Compilation failed:\n{result.stdout}\n{result.stderr}")
+        
+        # 4. Read the freshly generated binary file back into RAM
+        with open(out_path, "rb") as f:
+            exe_bytes = f.read()
+            
+        # 5. Wrap the bytes in a BytesIO object and rewind the pointer
+        return io.BytesIO(exe_bytes)
+
+    finally:
+        # 6. Always clean up both files from the hard drive, even if compilation crashed
+        for path in (src_path, out_path):
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except OSError:
+                pass  # Avoid crashing if the OS hasn't fully released the lock yet
 
 @MCP_SERVER.tool()
 def get_session_id(ctx: ClientContext = CurrentContext()) -> str:
