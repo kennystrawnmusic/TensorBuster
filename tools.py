@@ -722,7 +722,7 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
         target_key (str): Key (i.e. "large_layer.weight") in the model weights containing the target tensor
 
     Returns:
-        io.BytesIO: A Base64-encoded ZIP file containing the model weights and a JSON dump of the model's configuration. The following is an example of how to load the resulting modified model:
+        bytes: A Base64-encoded ZIP file containing the model weights and a JSON dump of the model's configuration. The following is an example of how to load the resulting modified model:
 
         ```python
         import io
