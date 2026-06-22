@@ -1,4 +1,5 @@
 import inspect
+import consts
 
 from transformers import AutoConfig, AutoModel, AutoTokenizer
 from fastmcp import FastMCP, Client, Context as ClientContext
@@ -15,6 +16,7 @@ class SessionContextManager(Middleware):
     
     def __init__(self, base_instructions: str, tokenizer=None):
         self.base_instructions = base_instructions
+        self.base_model = AutoModel.from_pretrained(consts.BASE_MODEL_ID)
         self.tokenizer = tokenizer
         self.session_history = {}  # {session_id: [{"role": "user"/"assistant", "content": ...}]}
     
@@ -25,12 +27,12 @@ class SessionContextManager(Middleware):
     def get_tokenizer(self, session_id: str) -> AutoTokenizer:
         """Retrieve tokenizer from middleware"""
         return self.tokenizer
-    
+
     def initialize_session(self, session_id: str) -> None:
         """Initialize conversation history for a new session."""
         if session_id not in self.session_history:
             self.session_history[session_id] = []
-    
+
     def add_user_command(self, session_id: str, prompt: str) -> None:
         """Add user command to session history."""
         self.initialize_session(session_id)
@@ -38,7 +40,7 @@ class SessionContextManager(Middleware):
             "role": "user",
             "content": prompt
         })
-    
+
     def add_agent_response(self, session_id: str, response: str) -> None:
         """Add agent response to session history."""
         self.initialize_session(session_id)
@@ -46,29 +48,29 @@ class SessionContextManager(Middleware):
             "role": "assistant",
             "content": response
         })
-    
+
     def get_session_history(self, session_id: str) -> list:
         """Retrieve conversation history for a session."""
         self.initialize_session(session_id)
         return self.session_history[session_id]
-    
+
     def build_prompt_context(self, session_id: str, tokenizer=None) -> str:
         """Build complete prompt context (system + conversation history) for a session."""
         self.initialize_session(session_id)
-        
+
         # Use provided tokenizer or fallback to instance tokenizer
         tok = tokenizer or self.tokenizer
         if not tok:
             raise ValueError("No tokenizer available for building prompt context")
-        
+
         # Start with base system instructions
         messages = [
             {"role": "system", "content": self.base_instructions}
         ]
-        
+
         # Add conversation history
         messages.extend(self.get_session_history(session_id))
-        
+
         # Apply tokenizer template
         context = tok.apply_chat_template(
             messages,
@@ -81,14 +83,14 @@ class SessionContextManager(Middleware):
         """Clear conversation history for a session."""
         if session_id in self.session_history:
             del self.session_history[session_id]
-    
+
     async def on_request(self, context, call_next):
         """Middleware hook: Capture user commands and associate with sessions."""
         # Extract session ID from the FastMCP context
         session_id = None
         if hasattr(context, 'fastmcp_context') and context.fastmcp_context:
             session_id = getattr(context.fastmcp_context, 'session_id', None)
-        
+
         # Extract user message/command from the request
         user_command = None
         if hasattr(context, 'request_body'):
@@ -98,25 +100,25 @@ class SessionContextManager(Middleware):
                 user_command = request_body.get('content') or request_body.get('message')
         elif hasattr(context, 'message'):
             user_command = context.message
-        
+
         # Store the user command in session history if we have both session_id and command
         if session_id and user_command and isinstance(user_command, str) and user_command.strip():
             self.add_user_command(session_id, user_command)
-        
+
         # Proceed with the request
         result = await call_next(context)
         return result
-    
+
     async def on_response(self, context, call_next):
         """Middleware hook: Capture agent responses, output to console, and persist to session history."""
         # Proceed with the response first to get the result
         result = await call_next(context)
-        
+
         # Extract session ID from the FastMCP context
         session_id = None
         if hasattr(context, 'fastmcp_context') and context.fastmcp_context:
             session_id = getattr(context.fastmcp_context, 'session_id', None)
-        
+
         # Handle streaming responses (async generators)
         if hasattr(result, '__aiter__'):
             accumulated_response = []

@@ -74,7 +74,7 @@ def main():
     MCP_SERVER.add_middleware(DynamicHostPortTracker(ip, port))
     MCP_SERVER.add_middleware(SessionContextManager(system_prompt, tokenizer))
     MCP_SERVER.add_middleware(SessionTracker())
-    MCP_SERVER.add_middleware(HFChatTemplatePreprocessor(model_id))
+    MCP_SERVER.add_middleware(HFChatTemplatePreprocessor(BASE_MODEL_ID))
     MCP_SERVER.add_middleware(StegoWrapper())
 
     # Use background thread to start the server
