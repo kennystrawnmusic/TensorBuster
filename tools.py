@@ -751,7 +751,7 @@ except ImportError:
         capture_output=True,
         text=True
     )
-    import fastmcp
+    from fastmcp import Client
 
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
