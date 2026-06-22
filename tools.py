@@ -929,7 +929,7 @@ MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
             original_target_tensor, payload_bytes_to_hide, num_lsb
         )
         print("Encoding complete.")
-    
+
         # Replace the original tensor with the modified one in the dictionary
         modified_state_dict = (
             loaded_state_dict.copy()
