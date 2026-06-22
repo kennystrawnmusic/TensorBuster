@@ -767,7 +767,7 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
         ValueError: If the payload is too big to fit in the target tensor
     """
 
-    # This is custom middleware I wrote myself which is added automatically by the system_prompt() initializer function, so should never be None
+    # This is custom middleware I wrote myself which is added automatically in `main()`, so should never be None
     host_port_tracker = next(m for m in server.middleware if type(m).__name__ == 'DynamicHostPortTracker')
 
     # This is why that middleware is needed: to ensure that we have access to the random port(s) after they've been allocated
