@@ -786,7 +786,7 @@ try:
 except ImportError:
     # Install FastMCP client package and try again
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "mcp", "fastmcp-slim[\"client\"]"],
+        [sys.executable, "-m", "pip", "install", "mcp", "fastmcp-slim[client]"],
         check=True,
         capture_output=True,
         text=True
