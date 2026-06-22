@@ -744,7 +744,7 @@ import json
 try:
     from fastmcp import Client
 except ImportError:
-    # Install FastMCP and try again
+    # Install FastMCP client package and try again
     subprocess.run(
         [sys.executable, "-m", "pip", "install", "fastmcp-slim[\"client\"]"],
         check=True,
