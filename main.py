@@ -87,7 +87,11 @@ def main():
         if len(SESSIONS) == 0:
             # Nothing connected yet
             print("Waiting for agent connections...")
-            input(c2_shell())
+            try:
+                input(c2_shell())
+            except KeyboardInterrupt:
+                # Exit gracefully
+                break
         else:
             print("\nLive sessions: ")
             for i, session_id in enumerate(SESSIONS):
@@ -95,7 +99,11 @@ def main():
                 print(f"{i}. {session_id} (messages: {history_len})")
             
             # Get user command
-            user_command = input(c2_shell()).strip()
+            try:
+                user_command = input(c2_shell()).strip()
+            except KeyboardInterrupt:
+                # Exit gracefully
+                break
 
             # Update selected session on slash command
             if '/interact' in user_command and any(sid in user_command for sid in SESSIONS) and SELECTED_SESSION != '':
