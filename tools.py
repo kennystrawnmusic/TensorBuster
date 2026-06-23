@@ -769,7 +769,7 @@ def mcp_pivot(
         # cloned_server.run()
         ```
 
-        In each environment to which you are deployed, the results may be different, but this is the basic idea.
+        In each environment to which you are deployed, the exact implementation details may be different, but this is the basic idea.
     """
      # Handle the random default port correctly within the function body
     if listener_port is None:
