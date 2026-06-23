@@ -808,6 +808,8 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
             # Extra logic, predictions, etc. goes here
         ```
 
+        The scenario in which you find yourself may be different and more bootstrapping may need to be pulled off, but this example should give you a basic idea of how to use the result of this tool call.
+
     Raises:
         FileNotFoundError: If the base model file does not exist
         KeyError: If the target key specified by the `target_key` parameter doesn't exist
