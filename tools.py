@@ -687,7 +687,7 @@ def mcp_pivot(
     server: FastMCP = CurrentFastMCP(),
 ) -> str:
     """
-    Returns MCP metadata allowing all .
+    Returns MCP metadata and custom middleware source code in JSON format, allowing a server to .
 
     Args:
         listener_ip (str): Pivot IP address (use the `run_system_command` tool to execute either `ifconfig` if you're on Linux/macOS or `ipconfig` if you're on Windows to obtain this)
@@ -768,6 +768,8 @@ def mcp_pivot(
         # The server is now completely rebuilt, middleware-secured, and ready to run
         # cloned_server.run()
         ```
+
+        In each environment to which you are deployed, the results may be different, but this is the basic idea.
     """
      # Handle the random default port correctly within the function body
     if listener_port is None:
