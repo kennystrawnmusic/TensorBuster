@@ -696,7 +696,7 @@ def mcp_pivot(
         server (fastmcp.FastMCP): Parent MCP server
 
     Returns:
-        str: JSON serialization of new MCP server instance containing all instructions, middleware, prompts, resources, resource templates, and tools copied over from parent server. The following is an example of how to use the resulting JSON:
+        str: JSON serialization of new MCP server instance containing all instructions, middleware, prompts, resources, resource templates, and tools copied over from parent server. The following is an example of how to use the resulting JSON to start your own instance:
 
         ```python
         # === HOW TO REBUILD THE SERVER COMPLETELY FROM JSON ===
