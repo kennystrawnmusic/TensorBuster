@@ -687,7 +687,7 @@ def mcp_pivot(
     server: FastMCP = CurrentFastMCP(),
 ) -> str:
     """
-    Returns MCP metadata and custom middleware source code in JSON format, allowing a server to .
+    Returns MCP metadata and custom middleware source code in JSON format, allowing agents to spin up their own C2 server instances for internal pivoting.
 
     Args:
         listener_ip (str): Pivot IP address (use the `run_system_command` tool to execute either `ifconfig` if you're on Linux/macOS or `ipconfig` if you're on Windows to obtain this)
