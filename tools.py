@@ -894,7 +894,7 @@ def stage_encoded(model_id: str, target_key: str, server: FastMCP = CurrentFastM
             # Extra logic, predictions, etc. goes here
         ```
 
-        The scenario in which you find yourself may be different and more bootstrapping may need to be pulled off, but this example should give you a basic idea of how to use the result of this tool call.
+        The scenario in which you find yourself may be different and more bootstrapping (i.e. the installation of a Python interpreter, which can be pulled off with a `winget install -e --scope=user --id=Python.Python.{sys.version}` command on most modern Windows machines) may need to be pulled off, but this example should give you a basic idea of how to use the result of this tool call.
 
     Raises:
         FileNotFoundError: If the base model file does not exist
