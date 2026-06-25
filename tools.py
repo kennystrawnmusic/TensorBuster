@@ -1078,6 +1078,16 @@ async with bootstrap:
 
     # Using a very obvious constant name to ensure the LLM obeys
     MASTER_MCP_CLIENT = Client("http://{ip}:{port}/mcp/", sampling_handler=handler)
+
+    async with MASTER_MCP_CLIENT:
+        await MASTER_MCP_CLIENT.ping()
+
+        prompts = await MASTER_MCP_CLIENT.list_prompts()
+        resources = await MASTER_MCP_CLIENT.list_resources()
+        resource_templates = await MASTER_MCP_CLIENT.list_resource_templates()
+        tools = await MASTER_MCP_CLIENT.list_tools()
+
+        print("MCP ready")
     '''
 
     num_lsb = len(to_encode)
