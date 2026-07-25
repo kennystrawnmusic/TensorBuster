@@ -6,7 +6,7 @@ from fastmcp import FastMCP
 MCP_SERVER = FastMCP("TensorBuster C2 Server")
 
 # Sliver-style session tracking
-SESSIONS = []
+SESSIONS = [""]
 SELECTED_SESSION = ""
 
 # Model configuration

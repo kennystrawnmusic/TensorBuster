@@ -20,7 +20,7 @@ def download_weights() -> AutoModel:
     model_path = Path("tb-base-model")
 
     if not os.path.exists("tb-base-model"):
-        _, model = download_base_model({BASE_MODEL_ID}, str(model_path))
+        _, model = download_base_model(BASE_MODEL_ID, str(model_path))
     else:
         print("Base model already exists, skipping server-side download")
         model = AutoModel.from_pretrained(model_path, local_files_only=True)
@@ -39,4 +39,4 @@ def load_tokenizer(server: FastMCP = CurrentFastMCP()) -> AutoTokenizer:
         m for m in server.middleware if "SessionContextManager" in m.__class__.__name__
     ))
 
-    return session_context_middleware.get_tokenizer()
+    return session_context_middleware.get_tokenizer() # pyright: ignore[reportCallIssue]

@@ -1,28 +1,7 @@
 import os
 import random
-import struct
-import subprocess
 import threading
 from argparse import ArgumentParser
-from pathlib import Path
-from socket import gethostbyname, gethostname
-
-import numpy as np
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torchvision.transforms.functional as F
-from fastmcp import Client, FastMCP
-from fastmcp import Context as ClientContext
-from fastmcp.dependencies import CurrentContext, CurrentFastMCP
-from fastmcp.server.context import Context as ServerContext
-from fastmcp.server.dependencies import get_http_request, get_server
-from fastmcp.server.middleware import Middleware
-from huggingface_hub import snapshot_download
-from PIL import Image
-from torch.utils.data import DataLoader, TensorDataset
-from torchvision import transforms
-from transformers import AutoConfig, AutoModel, AutoTokenizer
 
 from consts import *
 from middleware import *
@@ -65,7 +44,7 @@ def main():
 
     if not os.path.exists(MODEL_PATH):
         # BASE_MODEL_ID is defined in tools.py and imported here
-        tokenizer, _ = download_base_model(BASE_MODEL_ID, str(MODEL_PATH))
+        tokenizer, model = download_base_model(BASE_MODEL_ID, str(MODEL_PATH))
     else:
         print("Base model already exists, skipping download")
 
@@ -73,10 +52,9 @@ def main():
 
     # Middleware
     MCP_SERVER.add_middleware(DynamicHostPortTracker(ip, port))
-    MCP_SERVER.add_middleware(SessionContextManager(model, tokenizer))
+    MCP_SERVER.add_middleware(SessionContextManager(model, tokenizer)) # pyright: ignore[reportPossiblyUnboundVariable]
     MCP_SERVER.add_middleware(SessionTracker())
     MCP_SERVER.add_middleware(HFChatTemplatePreprocessor(BASE_MODEL_ID))
-    MCP_SERVER.add_middleware(StegoWrapper())
 
     # Use background thread to start the server
     main_thread = threading.Thread(
@@ -86,6 +64,15 @@ def main():
     )
 
     main_thread.start()
+
+    session_context = cast(
+        SessionContextManager,
+        next(
+            mid
+            for mid in CurrentFastMCP().middleware
+            if "SessionContextManager" in mid.__class__.__name__
+        ),
+    )
 
     while True:
         if len(SESSIONS) == 0:
@@ -112,17 +99,17 @@ def main():
             # Update selected session on slash command
             if (
                 "/interact" in user_command
-                and any(sid in user_command for sid in SESSIONS)
+                and any(sid for sid in SESSIONS if sid in user_command)
                 and SELECTED_SESSION != ""
             ):
                 old_session_id = SELECTED_SESSION
-                new_session_id = next(sid in user_command for sid in SESSIONS)
+                new_session_id = next(sid for sid in SESSIONS if sid in user_command)
                 session_context.add_user_command(
                     old_session_id, interact(new_session_id)
                 )
 
                 prompt_context = session_context.build_prompt_context(
-                    old_session_id, tokenizer
+                    old_session_id, tokenizer # pyright: ignore[reportPossiblyUnboundVariable]
                 )
 
                 def c2_switch(instructions=prompt_context):
@@ -130,17 +117,17 @@ def main():
 
                 from fastmcp import Prompt
 
-                c2_switch_prompt = Prompt.from_function(
+                c2_switch_prompt: Prompt = Prompt.from_function( # pyright: ignore[reportAttributeAccessIssue]
                     c2_switch, name=f"c2_command_{old_session_id}"
                 )
                 MCP_SERVER.add_prompt(c2_switch_prompt)
 
             elif (
                 "/interact" in user_command
-                and any(sid in user_command for sid in SESSIONS)
+                and any(sid for sid in SESSIONS if sid in user_command)
                 and SELECTED_SESSION == ""
             ):
-                session_id = next(sid in user_command for sid in SESSIONS)
+                session_id = next(sid for sid in SESSIONS if sid in user_command)
                 _ = interact(session_id)
 
             # Exit gracefully if user types `/exit`
@@ -156,7 +143,7 @@ def main():
 
             # Build complete prompt context from session history
             prompt_context = session_context.build_prompt_context(
-                SELECTED_SESSION, tokenizer
+                SELECTED_SESSION, tokenizer # pyright: ignore[reportPossiblyUnboundVariable]
             )
 
             # Define prompt getter that retrieves from session state
@@ -166,7 +153,7 @@ def main():
             # Create and register the prompt with FastMCP
             from fastmcp import Prompt
 
-            c2_command_prompt = Prompt.from_function(
+            c2_command_prompt = Prompt.from_function( # pyright: ignore[reportAttributeAccessIssue]
                 c2_command, name=f"c2_command_{SELECTED_SESSION}"
             )
 

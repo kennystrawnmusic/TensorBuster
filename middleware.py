@@ -224,7 +224,7 @@ class ChatStateSaver(Middleware):
 
 
 class DynamicHostPortTracker(Middleware):
-    def __init__(self, ip: str, port: str):
+    def __init__(self, ip: str, port: int):
         """
         Middleware for tracking dynamically allocated IP addresses and listener ports
         """
