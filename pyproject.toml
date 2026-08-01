@@ -35,6 +35,7 @@ dependencies = [
     "markitdown",
     "gitpython",
     "ruff",
+    "tiktoken",
     "htb-ai-library @ git+https://github.com/PandaSt0rm/htb-ai-library"
 ]
 
