@@ -26,7 +26,7 @@ def btou() -> dict:
     chars = [chr(c) for c in chars]
     return dict(zip(bytes, chars))
 
-def get_pairs(token) -> set:
+def get_pairs(token: tuple[str, ...]) -> set:
     """
     Returns a list of character pairs in the token.
     """
@@ -38,7 +38,7 @@ def get_pairs(token) -> set:
     return pairs
 
 class BytePairEncoder:
-    def __init__(self, encoder, bpe_merges, errors="replace"):
+    def __init__(self, encoder, bpe_merges: list[tuple[str, ...]], errors="replace"):
         self.encoder = encoder
         self.decoder = {v: k for k, v in encoder.items()}
         self.errors = errors
@@ -93,14 +93,14 @@ class BytePairEncoder:
         text = bytearray([self.byte_dec[c] for c in text]).decode("utf-8", errors=self.errors)
         return text
 
-def get_encoder(model, dir):
-    with open(Path(dir) / "encoder.json") as f:
+def get_encoder(model: str, dir: str) -> BytePairEncoder:
+    with open(Path(dir) / model / "encoder.json") as f:
         encoder = json.load(f)
-    with open(Path(dir) / "vocab.bpe") as f:
+    with open(Path(dir) / model / "vocab.bpe") as f:
         bpe_data = f.read();
 
     bpe_merges = [tuple(line.split()) for line in bpe_data.split("\n")[1:-1]]
-    return BytePairEncoder(encoder, bpe_merges)
+    return BytePairEncoder(encoder=encoder, bpe_merges=bpe_merges)
 
 def fetch_vocab():
     # Using pathlib.Path as a platform-agnostic solution
