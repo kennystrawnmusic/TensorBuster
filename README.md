@@ -31,7 +31,8 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `bytes` object for the agent to unpack and install software from)
 
 ## What still needs work
+* Move model generation logic into the middleware
 * Beaconing / sleep obfuscation
-* In-memory LLM loading on target systems that lack a Python interpreter (this is going to require the use of a client written in a compiled language [like](https://github.com/rust-mcp-stack/rust-mcp-sdk) [Rust](https://github.com/huggingface/huggingface_hub_rust) to ensure everything works)
-* `llmfit` as a plugin, to autodetect model compatibility on remote systems (this will have to also involve the Rust beacon)
+* Use of [PyInstaller](https://github.com/pyinstaller/pyinstaller) to create a standalone Windows executable for deployment to target systems
+* In-memory LLM loading
 * GUI
