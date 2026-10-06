@@ -10,5 +10,5 @@ SESSIONS = [""]
 SELECTED_SESSION = ""
 
 # Model configuration
-BASE_MODEL_ID: str = "NexVeridian/Qwen3-Coder-Next-8bit"
+BASE_MODEL_ID: str = "htb-ac-1424625/Qwen3.8-2B-Distill-heretic"
 MODEL_PATH = Path("tb-base-model")
