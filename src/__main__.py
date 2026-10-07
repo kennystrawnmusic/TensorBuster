@@ -28,10 +28,10 @@ def c2_shell() -> str:
 def main():
     parser = ArgumentParser(description="TensorBuster C2 Server")
 
-    parser.add_argument(
+    _ = parser.add_argument(
         "--listener-ip", required=True, type=str, help="Listener IP address"
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--listener-port",
         type=int,
         help="Listener Port (default: random integer between 30000 and 655535 to blend in with browser traffic)",
@@ -117,7 +117,7 @@ def main():
 
                 from fastmcp import Prompt
 
-                c2_switch_prompt: Prompt = Prompt.from_function( # pyright: ignore[reportAttributeAccessIssue]
+                c2_switch_prompt = Prompt.from_function( # pyright: ignore[reportAttributeAccessIssue]
                     c2_switch, name=f"c2_command_{old_session_id}"
                 )
                 MCP_SERVER.add_prompt(c2_switch_prompt)

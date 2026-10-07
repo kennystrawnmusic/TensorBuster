@@ -1,13 +1,11 @@
 import os
 import platform
-import re
 import socket
-import sys
 import urllib.request
 from html.parser import HTMLParser
 
 from setuptools import build_meta as _orig
-from setuptools.build_meta import *
+from setuptools.build_meta import *  # pyright: ignore[reportWildcardImportFromLibrary]
 
 # FORCE IPV4 ONLY (Fixes the getaddrinfo/IPv6 lab routing bug)
 orig_getaddrinfo = socket.getaddrinfo
@@ -27,7 +25,8 @@ try:
         f"{tag.interpreter}-{tag.abi}-{tag.platform}" for tag in sys_tags()
     }
 except ImportError:
-    SUPPORTED_TAGS = set()
+    # default to an empty set of tags
+    SUPPORTED_TAGS = {""}  # pyright: ignore[reportConstantRedefinition]
 
 
 class LinkParser(HTMLParser):

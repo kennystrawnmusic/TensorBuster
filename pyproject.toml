@@ -13,7 +13,6 @@ dependencies = [
     "scikit-learn",
     "matplotlib",
     "seaborn",
-    "unsloth",
     "transformers",
     "trl",
     "bitsandbytes",
@@ -43,8 +42,8 @@ dependencies = [
 requires = [
     "setuptools",
     "ninja",
-    "nvidia-cudnn-cu13",
-    "nvidia-nvtx"
+    "nvidia-cudnn-cu13; sys.platform != 'darwin'",
+    "nvidia-nvtx; sys.platform != 'darwin'"
 ]
 build-backend = "backend"
 backend-path = [
