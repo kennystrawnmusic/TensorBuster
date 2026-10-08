@@ -31,8 +31,9 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `bytes` object for the agent to unpack and install software from)
 
 ## What still needs work
-* Move model generation logic into the middleware
+* Add server-side model that agents can ask for instructions by calling a tool
+  - Place this server-side model's generation logic in the middleware
 * Beaconing / sleep obfuscation
 * Use of [PyInstaller](https://github.com/pyinstaller/pyinstaller) to create a standalone Windows executable for deployment to target systems
 * In-memory LLM loading
-* GUI
+* GUI using Qt/PySide2
