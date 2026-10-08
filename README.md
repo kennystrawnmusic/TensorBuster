@@ -9,7 +9,7 @@ TensorBuster is the result of this experiment. It's an atttempt to build a compl
 This tool is intended solely for use ONLY in the following contexts:
 * During an authorized red team operation
 * During an authorized internal penetration test of a production network
-* In a bug bounty program where aggressive WAFs like Cloudflare Firewall are present (particularly common in programs hosted on HackerOne, Bugcrowd, and the like)
+* In a bug bounty program where aggressive WAFs like Cloudflare Firewall are present (like Upwork's Bugcrowd-hosted program, for example)
 * In a realistic CTF or lab environment where lateral movement is necessary to make any progress
 
 I take absolutely no legal responsibility for the misuse of this software against any target that you lack written authorization to test. Responsibility is squarely on the user to ensure that this C2 framework is used legally, ethically, and responsibly.
