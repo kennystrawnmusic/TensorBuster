@@ -36,8 +36,11 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
   - Shell loop logic flaws (infinite loop)
   - Wildcard imports
   - Encoding values for binary reads (change rb to r when loading Base64 and only perform binary reads from BytesIO after decoding completes)
-* Add server-side model that agents can ask for instructions by calling a planned `get_operator_instructions` tool
+* Add server-side model as a C2 operator stand-in: the user can prompt the AI operator instead of relying on a human operator
   - Place this server-side model's generation logic in the middleware
+* Planned tools to add:
+  - `get_operator_instructions`: tool that allows deployed agents to prompt the server-side model
+  - `inject_chat_template`: tool that uses `AutoTokenizer.from_pretrained` to allow deployed agents to pull off priming attacks against a wide range of target models
 * Beaconing / sleep obfuscation
 * Use of [PyInstaller](https://github.com/pyinstaller/pyinstaller) to create a standalone Windows executable for deployment to target systems
 * In-memory LLM loading
