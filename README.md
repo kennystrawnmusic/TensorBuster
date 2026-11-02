@@ -30,7 +30,7 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * MCP-based staging (via the `stage_encoded` tool, which uses tensor steganography to hide an encoded MCP client inside a model that already exists on the target system, if discovered, and exports the resulting modified model data as a JSON object)
 * Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `bytes` object for the agent to unpack and install software from)
 
-## What still needs work
+## What still needs work during the winter 2026-27 break
 * Fix issues raised by former classmate John Drexler
   - Dead placeholder session ID in middleware
   - Shell loop logic flaws (infinite loop)
