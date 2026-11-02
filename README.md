@@ -31,7 +31,12 @@ PRs and issue reports are welcome! If during testing any issues are discovered, 
 * Reflective in-memory package installation (via the `pip_download` tool, which downloads a package along with all its dependencies, bundles all of them into a ZIP file, and hosts the resulting ZIP file as a `bytes` object for the agent to unpack and install software from)
 
 ## What still needs work
-* Add server-side model that agents can ask for instructions by calling a tool
+* Fix issues raised by former classmate John Drexler
+  - Dead placeholder session ID in middleware
+  - Shell loop logic flaws (infinite loop)
+  - Wildcard imports
+  - Encoding values for binary reads (change rb to r when loading Base64 and only perform binary reads from BytesIO after decoding completes)
+* Add server-side model that agents can ask for instructions by calling a planned `get_operator_instructions` tool
   - Place this server-side model's generation logic in the middleware
 * Beaconing / sleep obfuscation
 * Use of [PyInstaller](https://github.com/pyinstaller/pyinstaller) to create a standalone Windows executable for deployment to target systems
